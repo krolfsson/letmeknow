@@ -20,10 +20,8 @@ export type BuyerLead = {
   timeline: Timeline;
   loanApproved: boolean;
   balcony: boolean;
+  fireplace: boolean;
   elevator: boolean;
-  parkingWanted: boolean;
-  newerThan1990: boolean;
-  renovationOk: boolean;
   areaNotes: string;
   mapAreaGeoJson: GeoJSON.FeatureCollection | null;
 };

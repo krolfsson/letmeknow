@@ -121,10 +121,8 @@ export async function POST(request: Request) {
       timeline: tl!,
       loanApproved: Boolean(body.loanApproved),
       balcony: Boolean(body.balcony),
+      fireplace: Boolean(body.fireplace),
       elevator: Boolean(body.elevator),
-      parkingWanted: Boolean(body.parkingWanted),
-      newerThan1990: Boolean(body.newerThan1990),
-      renovationOk: Boolean(body.renovationOk),
       areaNotes:
         typeof body.areaNotes === "string"
           ? body.areaNotes.trim().slice(0, 2000)

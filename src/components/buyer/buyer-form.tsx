@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent, ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
+import { DualEndedRange } from "@/components/buyer/dual-ended-range";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import type { Timeline } from "@/lib/buyers";
@@ -63,9 +64,6 @@ const selectCn =
 
 const inpCn =
   "mt-1 w-full rounded-md border border-rule bg-bg px-2 py-1.5 text-[14px] text-fg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-1 focus-visible:ring-offset-bg";
-
-const rangeCn =
-  "h-7 w-full cursor-pointer accent-green sm:h-8";
 
 function CheckboxRow({
   checked,
@@ -134,10 +132,8 @@ export default function BuyerForm() {
   const [loanApproved, setLoanApproved] = useState(false);
 
   const [balcony, setBalcony] = useState(false);
+  const [fireplace, setFireplace] = useState(false);
   const [elevator, setElevator] = useState(false);
-  const [parkingWanted, setParkingWanted] = useState(false);
-  const [newerThan1990, setNewerThan1990] = useState(false);
-  const [renovationOk, setRenovationOk] = useState(true);
   const [areaNotes, setAreaNotes] = useState("");
 
   const [submitErr, setSubmitErr] = useState<string | null>(null);
@@ -154,13 +150,13 @@ export default function BuyerForm() {
   );
 
   const setRoomMinAdj = useCallback((v: number) => {
-    const next = clamp(v, ROOM_ABS_MIN, ROOM_ABS_MAX);
+    const next = clamp(Math.round(v), ROOM_ABS_MIN, ROOM_ABS_MAX);
     setRoomMin(next);
     setRoomMax((max) => (max < next ? next : max));
   }, []);
 
   const setRoomMaxAdj = useCallback((v: number) => {
-    const next = clamp(v, ROOM_ABS_MIN, ROOM_ABS_MAX);
+    const next = clamp(Math.round(v), ROOM_ABS_MIN, ROOM_ABS_MAX);
     setRoomMax(next);
     setRoomMin((min) => (min > next ? next : min));
   }, []);
@@ -224,10 +220,8 @@ export default function BuyerForm() {
       timeline,
       loanApproved,
       balcony,
+      fireplace,
       elevator,
-      parkingWanted,
-      newerThan1990,
-      renovationOk,
       areaNotes,
       mapAreaGeoJson: mapGeoJson,
     };
@@ -268,18 +262,19 @@ export default function BuyerForm() {
           Köparsignal
         </p>
         <h1 className="font-display mt-1 text-2xl font-bold tracking-tight text-fg sm:text-4xl">
-          Dra i reglagen — kartan till höger
+          Dra min · max på samma linje — kartan till höger
         </h1>
         <p className="mt-1.5 max-w-xl text-[13px] leading-snug text-subtle">
-          Rum · kvm · budget med min/max · korta kryss för det som stämmer överst.
+          Reglagen har två thumbs: vänster sida = minsta, höger sida = högsta. Bolån
+          och kryss för bostaden ligger nedan.
         </p>
 
         <form
           onSubmit={handleSubmit}
-          className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_min(44%,460px)] lg:gap-7"
+          className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_min(44%,460px)] lg:gap-6"
           noValidate
         >
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             <FieldGroup legend="Kontakt">
               <div>
                 <label className={labelCn}>
@@ -295,7 +290,7 @@ export default function BuyerForm() {
                   autoComplete="name"
                 />
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-2.5 sm:grid-cols-2">
                 <div>
                   <label className={labelCn}>
                     <span>Mejl</span>
@@ -329,7 +324,7 @@ export default function BuyerForm() {
               </div>
             </FieldGroup>
 
-            <FieldGroup legend="Boende">
+            <FieldGroup legend="Boende och siffror">
               <div>
                 <label className={labelCn}>
                   <span>Typ</span>
@@ -351,104 +346,47 @@ export default function BuyerForm() {
                 </select>
               </div>
 
-              <div>
-                <label className={labelCn}>
-                  <span>Lägst antal rum</span>
-                  <span>{roomLbl(roomMin)}</span>
-                </label>
-                <input
-                  className={rangeCn}
-                  type="range"
-                  min={ROOM_ABS_MIN}
-                  max={ROOM_ABS_MAX}
-                  step={1}
-                  value={roomMin}
-                  onChange={(e) =>
-                    setRoomMinAdj(Number.parseInt(e.target.value, 10))
-                  }
-                />
-              </div>
-              <div>
-                <label className={labelCn}>
-                  <span>Högst antal rum</span>
-                  <span>{roomLbl(roomMax)}</span>
-                </label>
-                <input
-                  className={rangeCn}
-                  type="range"
-                  min={ROOM_ABS_MIN}
-                  max={ROOM_ABS_MAX}
-                  step={1}
-                  value={roomMax}
-                  onChange={(e) =>
-                    setRoomMaxAdj(Number.parseInt(e.target.value, 10))
-                  }
-                />
-              </div>
+              <DualEndedRange
+                absMax={ROOM_ABS_MAX}
+                absMin={ROOM_ABS_MIN}
+                ariaLabelHigh="Max antal rum"
+                ariaLabelLow="Min antal rum"
+                step={1}
+                summary={`${roomLbl(roomMin)} till ${roomLbl(roomMax)}`}
+                title="Rum"
+                valueMax={roomMax}
+                valueMin={roomMin}
+                onHighChange={setRoomMaxAdj}
+                onLowChange={setRoomMinAdj}
+              />
 
-              <div>
-                <label className={labelCn}>
-                  <span>Storlek (kvm)</span>
-                  <span>
-                    {kvmMin}–{kvmMax}&nbsp;m²
-                  </span>
-                </label>
-                <input
-                  className={rangeCn}
-                  type="range"
-                  min={KVM_MIN_AREA}
-                  max={KVM_MAX_AREA}
-                  step={KVM_STEP}
-                  value={kvmMin}
-                  onChange={(e) =>
-                    setKvmMinAdj(Number.parseFloat(e.target.value))
-                  }
-                  aria-valuetext={`${kvmMin} till ${kvmMax} kvadratmeter`}
-                />
-                <input
-                  className={cn(rangeCn, "mt-1.5")}
-                  type="range"
-                  min={KVM_MIN_AREA}
-                  max={KVM_MAX_AREA}
-                  step={KVM_STEP}
-                  value={kvmMax}
-                  onChange={(e) =>
-                    setKvmMaxAdj(Number.parseFloat(e.target.value))
-                  }
-                  aria-valuetext={`${kvmMin} till ${kvmMax} kvadratmeter`}
-                />
-              </div>
+              <DualEndedRange
+                absMax={KVM_MAX_AREA}
+                absMin={KVM_MIN_AREA}
+                ariaLabelHigh="Största kvm"
+                ariaLabelLow="Minsta kvm"
+                step={KVM_STEP}
+                summary={`${kvmMin}–${kvmMax}\u202fm²`}
+                title="Boyta"
+                valueMax={kvmMax}
+                valueMin={kvmMin}
+                onHighChange={setKvmMaxAdj}
+                onLowChange={setKvmMinAdj}
+              />
 
-              <div>
-                <label className={labelCn}>
-                  <span>Budget</span>
-                  <span>
-                    {fmtSek(budgetMinSEK)} – {fmtSek(budgetMaxSEK)}
-                  </span>
-                </label>
-                <input
-                  className={rangeCn}
-                  type="range"
-                  min={BUDGET_ABS_MIN}
-                  max={BUDGET_ABS_MAX}
-                  step={BUDGET_STEP}
-                  value={budgetMinSEK}
-                  onChange={(e) =>
-                    setBudgetMinAdj(Number.parseFloat(e.target.value))
-                  }
-                />
-                <input
-                  className={cn(rangeCn, "mt-1.5")}
-                  type="range"
-                  min={BUDGET_ABS_MIN}
-                  max={BUDGET_ABS_MAX}
-                  step={BUDGET_STEP}
-                  value={budgetMaxSEK}
-                  onChange={(e) =>
-                    setBudgetMaxAdj(Number.parseFloat(e.target.value))
-                  }
-                />
-              </div>
+              <DualEndedRange
+                absMax={BUDGET_ABS_MAX}
+                absMin={BUDGET_ABS_MIN}
+                ariaLabelHigh="Övre budgetgräns"
+                ariaLabelLow="Nedre budgetgräns"
+                step={BUDGET_STEP}
+                summary={`${fmtSek(budgetMinSEK)} – ${fmtSek(budgetMaxSEK)}`}
+                title="Budget"
+                valueMax={budgetMaxSEK}
+                valueMin={budgetMinSEK}
+                onHighChange={setBudgetMaxAdj}
+                onLowChange={setBudgetMinAdj}
+              />
 
               <div>
                 <label
@@ -476,28 +414,33 @@ export default function BuyerForm() {
               </div>
             </FieldGroup>
 
-            <FieldGroup legend="Tillval">
-              <div className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
-                <CheckboxRow
-                  checked={loanApproved}
-                  onChecked={setLoanApproved}
-                  label="Har lånelöfte (eller bank utlovar snart)"
-                />
+            <FieldGroup legend="Bolån">
+              <CheckboxRow
+                checked={loanApproved}
+                onChecked={setLoanApproved}
+                label="Jag har bolånelöfte (eller väntas från bank inom kort)"
+              />
+              <p className="text-[11px] leading-snug text-subtle">
+                Här räcker vi bara vad du själv upplever – ingen bank verifierar i
+                det här skedet på knowwhatiwant.
+              </p>
+            </FieldGroup>
+
+            <FieldGroup legend="Önskad bostad — checklista">
+              <div className="grid gap-2 sm:grid-cols-1">
                 <CheckboxRow checked={balcony} onChecked={setBalcony} label="Vill kunna ha balkong eller uteplats" />
-                <CheckboxRow checked={elevator} onChecked={setElevator} label="Behöver hiss till våningen" />
-                <CheckboxRow checked={parkingWanted} onChecked={setParkingWanted} label="Parkering eller garage" />
-                <CheckboxRow checked={newerThan1990} onChecked={setNewerThan1990} label="Hellre hus från 1990 eller senare" />
-                <CheckboxRow checked={renovationOk} onChecked={setRenovationOk} label="Renovering är okej" />
+                <CheckboxRow checked={fireplace} onChecked={setFireplace} label="Eldstad önskad (spis/kamin/öppen spis)" />
+                <CheckboxRow checked={elevator} onChecked={setElevator} label="Hiss till lägenhetsplan" />
               </div>
               <div>
                 <label className={labelCn}>
-                  <span>Om du vill säga på ord</span>
+                  <span>Övrigt i ord — gata, hus, område</span>
                   <span />
                 </label>
                 <textarea
-                  className={cn(inpCn, "min-h-[68px] resize-y py-2")}
+                  className={cn(inpCn, "min-h-[64px] resize-y py-2")}
                   name="areaNotes"
-                  placeholder='Gatan, husnumret, eller "hela Kungsholmen"…'
+                  placeholder='T.ex. "vill höra om just Storgatan" eller bredare…'
                   rows={3}
                   value={areaNotes}
                   onChange={(e) => setAreaNotes(e.target.value)}
