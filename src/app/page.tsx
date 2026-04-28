@@ -29,10 +29,10 @@ export default function Home() {
 
           <div className="mt-10 grid w-full gap-3 sm:grid-cols-2 sm:gap-4">
             <Button variant="primary" asChild>
-              <Link href="/buyer">Berätta mitt sök</Link>
+              <Link href="/buyer">Jag är köpare</Link>
             </Button>
             <Button variant="secondary" asChild>
-              <Link href="/agents-portal-123">Mäklare · leta leads</Link>
+              <Link href="/agents-portal-123">Jag är mäklare</Link>
             </Button>
           </div>
         </Container>
