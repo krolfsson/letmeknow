@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vet vad jag vill · köpare & mäklare (MVP)",
+  title: "Vet vad jag vill",
   description:
-    "Anmäl vilket boende du söker – mäklare som jobbar i dina områden kan kontakta dig direkt. Mäklare ser kvalificerat köparintresse.",
+    "Beskriv vad du söker. Mäklare som jobbar dina områden hör av sig direkt.",
 };
 
 export default function RootLayout({

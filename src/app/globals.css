@@ -1,51 +1,44 @@
 @import "tailwindcss";
 
-/* Nordic marketplace palette — Hemnet-adjacent warmth + forest green accents (2026) */
 :root {
-  --background: #f7f7f5;
-  --foreground: #1a1f1c;
-  --muted: #5b6360;
-  --surface: #ffffff;
-  --surface-subtle: #eef2ef;
-  --border: rgb(26 31 28 / 0.1);
-  --accent: #0f6d57;
-  --accent-hover: #0c5a47;
-  --accent-foreground: #f8faf8;
-  --accent-soft: #d9ebe4;
+  --bg: #fafaf8;
+  --fg: #111110;
+  --subtle: #6b7280;
+  --rule: rgb(17 17 16 / 0.1);
+  --green: #0f6d57;
+  --green-hover: #0b5e4b;
+  --green-fg: #f5faf8;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-surface: var(--surface);
-  --color-surface-subtle: var(--surface-subtle);
-  --color-border-brand: var(--border);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent-soft: var(--accent-soft);
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-subtle: var(--subtle);
+  --color-rule: var(--rule);
+  --color-green: var(--green);
+  --color-green-hover: var(--green-hover);
+  --color-green-fg: var(--green-fg);
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #121816;
-    --foreground: #eef1ee;
-    --muted: #9aa39d;
-    --surface: #171d1a;
-    --surface-subtle: #1e2622;
-    --border: rgb(238 241 238 / 0.12);
-    --accent: #3ecf9b;
-    --accent-hover: #54d9a9;
-    --accent-foreground: #0d1411;
-    --accent-soft: #1f3d32;
+    --bg: #0e110f;
+    --fg: #f0f2f0;
+    --subtle: #8a9490;
+    --rule: rgb(240 242 240 / 0.1);
+    --green: #3ecf9b;
+    --green-hover: #52d6a5;
+    --green-fg: #081410;
   }
 }
 
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--fg);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
