@@ -1,64 +1,103 @@
-import Image from "next/image";
+import Link from "next/link";
+import { Container } from "@/components/container";
+import { SiteHeader } from "@/components/site-header";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="min-h-dvh bg-gradient-to-b from-accent-soft via-background to-[#ebece8] dark:from-[#152722] dark:via-[#121816] dark:to-[#121816]">
+      <SiteHeader />
+      <main className="py-10 sm:py-14">
+        <Container>
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 lg:items-start">
+            <section className="space-y-5">
+              <p className="inline-flex w-fit max-w-full flex-wrap items-center gap-2 rounded-full border border-border-brand bg-surface/90 px-3 py-1.5 text-xs font-medium text-muted shadow-sm backdrop-blur dark:bg-surface/80">
+                <span className="rounded-md bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent dark:text-accent-foreground">
+                  Buyers & agents
+                </span>
+                <span className="text-foreground/80">
+                  Straightforward signup · Local MVP · No login yet
+                </span>
+              </p>
+              <h1 className="text-balance text-4xl font-semibold tracking-tight text-foreground sm:text-5xl">
+                Tell us what home you&apos;re after. Serious agents reply.
+              </h1>
+              <p className="max-w-prose text-pretty text-base leading-7 text-muted">
+                Looking to buy a place in Sweden&apos;s tighter market?
+                Describe your budget and timing once — brokers who cover your areas
+                can reach you with real listings. Sellers&apos; reps get qualified
+                demand; you get replies that match{" "}
+                <span className="font-medium text-foreground">your</span>{" "}
+                intent, not random cold calls about everything on their books.
+              </p>
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+                <Button asChild>
+                  <Link href="/buyer">Add my buyer interest</Link>
+                </Button>
+                <Button variant="secondary" asChild>
+                  <Link href="/agents-portal-123">See how agents use this</Link>
+                </Button>
+              </div>
+              <div className="grid gap-3 rounded-2xl border border-border-brand bg-surface p-5 text-sm text-muted shadow-sm dark:bg-surface/90">
+                <div className="flex items-start gap-3">
+                  <span
+                    aria-hidden
+                    className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent dark:bg-accent"
+                  />
+                  <p>
+                    <strong className="font-medium text-foreground">You</strong>
+                    : Share area, budget, and timeline in one flow. Matching agents
+                    get your phone and email —{" "}
+                    <span className="font-medium text-foreground">no inbox</span>{" "}
+                    inside this app for now; you stay in charge of next steps.
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <span
+                    aria-hidden
+                    className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-accent dark:bg-accent"
+                  />
+                  <p>
+                    <strong className="font-medium text-foreground">
+                      Agents & teams
+                    </strong>
+                    : Scan buyers by geography and budget — then contact people
+                    who actually fit what you&apos;re mandated to sell, without
+                    buying another lead list lottery ticket.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-border-brand bg-surface p-6 shadow-[0_1px_3px_rgb(0_0_0/0.06)] dark:bg-surface/90 sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-wide text-accent dark:text-accent-foreground">
+                Sneak peek
+              </p>
+              <h2 className="mt-1 text-lg font-semibold tracking-tight text-foreground">
+                Your interest form — short and clear
+              </h2>
+              <p className="mt-1 text-sm text-muted">
+                We&apos;ll ask for essentials only: contacts, neighbourhoods,
+                range, timeline, financing. Takes a couple of minutes.
+              </p>
+              <div className="mt-6 grid gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-11 flex-1 rounded-xl bg-surface-subtle dark:bg-accent-soft/15" />
+                  <div className="hidden h-11 w-28 rounded-xl bg-accent/10 sm:block" />
+                </div>
+                <div className="h-11 w-full rounded-xl bg-surface-subtle dark:bg-accent-soft/15" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="h-11 w-full rounded-xl bg-surface-subtle dark:bg-accent-soft/15" />
+                  <div className="h-11 w-full rounded-xl bg-surface-subtle dark:bg-accent-soft/15" />
+                </div>
+                <div className="h-11 w-full rounded-xl bg-surface-subtle dark:bg-accent-soft/15" />
+                <div className="flex items-center gap-2">
+                  <div className="h-11 flex-1 rounded-xl bg-accent/15 dark:bg-accent/20" />
+                </div>
+              </div>
+            </section>
+          </div>
+        </Container>
       </main>
     </div>
   );
