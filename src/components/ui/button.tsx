@@ -9,7 +9,7 @@ import {
 import { cn } from "@/lib/cn";
 
 type CommonProps = {
-  variant?: "primary" | "ghost";
+  variant?: "primary" | "secondary";
   asChild?: boolean;
   children?: ReactNode;
   className?: string;
@@ -23,13 +23,12 @@ export function Button(props: ButtonProps) {
   const { variant = "primary", asChild, className, children, ...rest } = props;
 
   const base =
-    "inline-flex h-11 items-center justify-center gap-1.5 rounded-md px-5 text-[15px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:pointer-events-none disabled:opacity-40";
+    "inline-flex h-12 min-w-[9.5rem] flex-1 items-center justify-center gap-1.5 rounded-lg px-5 text-[15px] font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:pointer-events-none disabled:opacity-40 sm:min-w-[11rem] sm:flex-initial";
 
   const variants: Record<NonNullable<CommonProps["variant"]>, string> = {
-    primary:
-      "bg-green text-green-fg hover:bg-green-hover",
-    ghost:
-      "bg-transparent text-subtle hover:text-fg",
+    primary: "bg-green text-green-fg shadow-sm hover:bg-green-hover",
+    secondary:
+      "border-2 border-green bg-green-mist/80 text-green-deep hover:bg-green-soft/50 dark:bg-green-mist/30 dark:text-green dark:hover:bg-green-soft/20",
   };
 
   const classes = cn(base, variants[variant], className);

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Geist } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -7,15 +7,16 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const display = Bricolage_Grotesque({
+  variable: "--font-display",
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: "Vet vad jag vill",
+  title: "knowwhatiwant",
   description:
-    "Beskriv vad du söker. Mäklare som jobbar dina områden hör av sig direkt.",
+    "Säg vad du vill bo i — gata, hus eller helt brett — så hittar mäklare leads som faktiskt matchar.",
 };
 
 export default function RootLayout({
@@ -26,11 +27,9 @@ export default function RootLayout({
   return (
     <html
       lang="sv"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${display.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-background text-foreground">
-        {children}
-      </body>
+      <body className="flex min-h-full flex-col bg-bg text-fg">{children}</body>
     </html>
   );
 }

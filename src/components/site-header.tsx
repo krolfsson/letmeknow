@@ -3,16 +3,19 @@ import { Container } from "@/components/container";
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-rule">
-      <Container className="flex h-14 items-center justify-between">
-        <Link href="/" className="text-[15px] font-semibold tracking-tight text-fg">
-          Vet vad jag vill
+    <header className="shrink-0 border-b border-rule bg-bg/90">
+      <Container className="flex h-12 items-center justify-between sm:h-14">
+        <Link
+          href="/"
+          className="font-display text-[17px] font-semibold tracking-tight text-fg"
+        >
+          knowwhatiwant
         </Link>
         <Link
           href="/agents-portal-123"
-          className="text-sm text-subtle transition-colors hover:text-fg"
+          className="text-sm font-medium text-green hover:text-green-hover"
         >
-          Mäklare →
+          Mäklare
         </Link>
       </Container>
     </header>

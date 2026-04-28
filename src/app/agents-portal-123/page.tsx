@@ -5,29 +5,27 @@ import { Button } from "@/components/ui/button";
 
 export default function AgentsPortalPage() {
   return (
-    <div className="min-h-dvh bg-bg">
+    <div className="flex min-h-dvh flex-col bg-bg">
       <SiteHeader />
-      <main className="pb-20 pt-16">
-        <Container>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-subtle">
+      <main className="flex flex-1 flex-col justify-center pb-14 pt-10">
+        <Container className="max-w-xl">
+          <p className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-green">
             Mäklare
           </p>
-          <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight text-fg sm:text-5xl">
-            Listan byggs.
+          <h1 className="font-display mt-3 text-4xl font-bold tracking-tight text-fg">
+            Listan nästa release.
           </h1>
-          <p className="mt-4 max-w-xs text-lg text-subtle">
-            Köpare anmäler sig. Du filtrar på område och budget, kopierar
-            kontakt och ringer. Inget mer än så.
+          <p className="mt-4 max-w-md text-[15px] leading-relaxed text-subtle">
+            Köpare lämnar sina signaler här på knowwhatiwant; du kopplar filtren
+            mot dina sälj och plockar de hetaste först — hemlig URL tills vidare,
+            ingen inloggningskö.
           </p>
-          <p className="mt-5 text-sm text-subtle">
-            Hemlig URL · inga konton i MVP-versionen.
-          </p>
-          <div className="mt-8 flex items-center gap-4">
-            <Button asChild>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            <Button variant="primary" asChild>
               <Link href="/buyer">Se köparsidan</Link>
             </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/">← Start</Link>
+            <Button variant="secondary" asChild>
+              <Link href="/">Till startsidan</Link>
             </Button>
           </div>
         </Container>

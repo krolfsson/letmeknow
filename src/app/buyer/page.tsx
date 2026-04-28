@@ -5,26 +5,26 @@ import { Button } from "@/components/ui/button";
 
 export default function BuyerPage() {
   return (
-    <div className="min-h-dvh bg-bg">
+    <div className="flex min-h-dvh flex-col bg-bg">
       <SiteHeader />
-      <main className="pb-20 pt-16">
-        <Container>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-subtle">
-            Köpare
+      <main className="flex flex-1 flex-col justify-center pb-14 pt-10">
+        <Container className="max-w-xl">
+          <p className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-green">
+            Köpersidan
           </p>
-          <h1 className="mt-3 text-4xl font-semibold leading-tight tracking-tight text-fg sm:text-5xl">
+          <h1 className="font-display mt-3 text-4xl font-bold tracking-tight text-fg">
             Varsågod.
           </h1>
-          <p className="mt-4 max-w-xs text-lg text-subtle">
-            Formuläret är på gång. Snart fyller du i vad du söker — tre
-            minuter, sedan syns du för rätt mäklare.
+          <p className="mt-4 max-w-md text-[15px] leading-relaxed text-subtle">
+            Formulär kommer nästa sprint: du lägger i område, mål för boende –
+            mäklarna ser vad som matchar på knowwhatiwant.
           </p>
-          <div className="mt-8 flex items-center gap-4">
-            <Button asChild>
-              <Link href="/">Tillbaka</Link>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+            <Button variant="primary" asChild>
+              <Link href="/">Till startsidan</Link>
             </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/agents-portal-123">Mäklarvyn →</Link>
+            <Button variant="secondary" asChild>
+              <Link href="/agents-portal-123">Mäklare · leta leads</Link>
             </Button>
           </div>
         </Container>

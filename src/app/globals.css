@@ -1,13 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #fafaf8;
-  --fg: #111110;
-  --subtle: #6b7280;
-  --rule: rgb(17 17 16 / 0.1);
-  --green: #0f6d57;
-  --green-hover: #0b5e4b;
-  --green-fg: #f5faf8;
+  --bg: #f4f7f4;
+  --fg: #0f1411;
+  --subtle: #4b5c52;
+  --rule: rgb(15 20 17 / 0.1);
+  --green: #0d7a5c;
+  --green-hover: #0a6349;
+  --green-fg: #f6fdf9;
+  --green-soft: #c5e8d8;
+  --green-mist: #e4f2eb;
+  --green-deep: #06402f;
 }
 
 @theme inline {
@@ -18,18 +21,24 @@
   --color-green: var(--green);
   --color-green-hover: var(--green-hover);
   --color-green-fg: var(--green-fg);
+  --color-green-soft: var(--green-soft);
+  --color-green-mist: var(--green-mist);
+  --color-green-deep: var(--green-deep);
   --font-sans: var(--font-geist-sans);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0e110f;
-    --fg: #f0f2f0;
-    --subtle: #8a9490;
-    --rule: rgb(240 242 240 / 0.1);
-    --green: #3ecf9b;
-    --green-hover: #52d6a5;
-    --green-fg: #081410;
+    --bg: #0c1410;
+    --fg: #eef4ef;
+    --subtle: #9bb0a5;
+    --rule: rgb(238 244 239 / 0.12);
+    --green: #3dd898;
+    --green-hover: #55e5a9;
+    --green-fg: #041910;
+    --green-soft: #1a4635;
+    --green-mist: #122c22;
+    --green-deep: #8fffc8;
   }
 }
 
@@ -41,4 +50,8 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
 }
