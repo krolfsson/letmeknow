@@ -111,12 +111,11 @@ export const BuyerAreaMap = memo(function BuyerAreaMap({
   onChange: (fc: GeoJSON.FeatureCollection | null) => void;
 }) {
   return (
-    <div className="rounded-lg border border-rule bg-bg">
-      <p className="border-b border-rule px-3 py-2 text-[13px] text-subtle">
-        Rita var du vill leta – polygon eller ruta på kartan. Ingen form = okej
-        också.
+    <div className="rounded-md border border-rule bg-bg">
+      <p className="border-b border-rule px-2 py-1.5 text-[11px] leading-snug text-subtle">
+        Polygon eller rekt på kartan • valfritt
       </p>
-      <div className="h-[min(48vh,420px)] min-h-[280px] w-full">
+      <div className="h-[min(40vh,340px)] min-h-[210px] w-full lg:min-h-[260px]">
         <MapInner>
           <GeoSync onChange={onChange} />
         </MapInner>

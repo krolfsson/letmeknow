@@ -14,6 +14,12 @@ function parseSqm(v: unknown): number | null {
   return n;
 }
 
+function parseRoom(v: unknown): number | undefined {
+  const n = typeof v === "number" ? v : typeof v === "string" ? parseInt(v, 10) : NaN;
+  if (!Number.isFinite(n)) return undefined;
+  return n;
+}
+
 function parseGeoJson(input: unknown): GeoJSON.FeatureCollection | null {
   if (!input || typeof input !== "object") return null;
   const o = input as Record<string, unknown>;
@@ -34,6 +40,13 @@ export async function GET() {
   return NextResponse.json(rows);
 }
 
+const ROOM_ABS_MIN = 1;
+const ROOM_ABS_MAX = 5;
+const KVM_MIN = 25;
+const KVM_MAX = 300;
+const BUDGET_FLOOR = 250_000;
+const BUDGET_CEIL = 40_000_000;
+
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as Partial<BuyerLead> &
@@ -48,15 +61,37 @@ export async function POST(request: Request) {
     if (!phone) missing.push("phone");
 
     const dwellingType =
-      typeof body.dwellingType === "string" ? body.dwellingType : "";
-    const rooms = typeof body.rooms === "string" ? body.rooms : "";
+      typeof body.dwellingType === "string" ? body.dwellingType.trim() : "";
     if (!dwellingType) missing.push("dwellingType");
-    if (!rooms) missing.push("rooms");
+
+    const rmMin = parseRoom(body.roomMin);
+    const rmMax = parseRoom(body.roomMax);
+    if (
+      rmMin === undefined ||
+      rmMax === undefined ||
+      rmMin < ROOM_ABS_MIN ||
+      rmMax > ROOM_ABS_MAX ||
+      rmMin > rmMax
+    ) {
+      missing.push("roomsRange");
+    }
+
+    const areaSqmMin = parseSqm(body.areaSqmMin ?? null);
+    const areaSqmMax = parseSqm(body.areaSqmMax ?? null);
+    if (
+      areaSqmMin === null ||
+      areaSqmMax === null ||
+      areaSqmMin < KVM_MIN ||
+      areaSqmMax > KVM_MAX ||
+      areaSqmMin > areaSqmMax
+    ) {
+      missing.push("kvmRange");
+    }
 
     const budgetMinSEK = parseBudget(body.budgetMinSEK);
     const budgetMaxSEK = parseBudget(body.budgetMaxSEK);
-    if (!(budgetMinSEK > 0)) missing.push("budgetMinSEK");
-    if (!(budgetMaxSEK > 0 && budgetMaxSEK >= budgetMinSEK)) {
+    if (!(budgetMinSEK >= BUDGET_FLOOR)) missing.push("budgetMinSEK");
+    if (!(budgetMaxSEK >= budgetMinSEK && budgetMaxSEK <= BUDGET_CEIL)) {
       missing.push("budgetRange");
     }
 
@@ -64,16 +99,8 @@ export async function POST(request: Request) {
     const timelines: BuyerLead["timeline"][] = ["nu", "3man", "6man"];
     if (!tl || !timelines.includes(tl)) missing.push("timeline");
 
-    const fin = body.financing as BuyerLead["financing"] | undefined;
-    const fins: BuyerLead["financing"][] = ["kontant", "banklan", "osaker"];
-    if (!fin || !fins.includes(fin)) missing.push("financing");
-
     if (missing.length) {
       return NextResponse.json({ error: "Invalid form", missing }, { status: 400 });
-    }
-
-    if (!tl || !fin) {
-      return NextResponse.json({ error: "Validering misslyckades." }, { status: 400 });
     }
 
     const geo = parseGeoJson(body.mapAreaGeoJson ?? null);
@@ -85,16 +112,16 @@ export async function POST(request: Request) {
       email,
       phone,
       dwellingType,
-      rooms,
-      areaSqmMin: parseSqm(body.areaSqmMin ?? null),
-      areaSqmMax: parseSqm(body.areaSqmMax ?? null),
+      roomMin: rmMin!,
+      roomMax: rmMax!,
+      areaSqmMin,
+      areaSqmMax,
       budgetMinSEK,
       budgetMaxSEK,
-      timeline: tl,
-      financing: fin,
+      timeline: tl!,
+      loanApproved: Boolean(body.loanApproved),
       balcony: Boolean(body.balcony),
       elevator: Boolean(body.elevator),
-      petFriendly: Boolean(body.petFriendly),
       parkingWanted: Boolean(body.parkingWanted),
       newerThan1990: Boolean(body.newerThan1990),
       renovationOk: Boolean(body.renovationOk),

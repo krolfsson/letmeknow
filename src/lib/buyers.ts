@@ -1,7 +1,6 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
 
-export type Financing = "kontant" | "banklan" | "osaker";
 export type Timeline = "nu" | "3man" | "6man";
 
 /** Det köpare lämnar in – formulär + ritat område på karta */
@@ -12,16 +11,16 @@ export type BuyerLead = {
   email: string;
   phone: string;
   dwellingType: string;
-  rooms: string;
+  roomMin: number;
+  roomMax: number;
   areaSqmMin: number | null;
   areaSqmMax: number | null;
   budgetMinSEK: number;
   budgetMaxSEK: number;
   timeline: Timeline;
-  financing: Financing;
+  loanApproved: boolean;
   balcony: boolean;
   elevator: boolean;
-  petFriendly: boolean;
   parkingWanted: boolean;
   newerThan1990: boolean;
   renovationOk: boolean;

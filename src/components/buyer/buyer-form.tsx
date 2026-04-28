@@ -7,7 +7,7 @@ import type { FormEvent, ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import type { Financing, Timeline } from "@/lib/buyers";
+import type { Timeline } from "@/lib/buyers";
 import { cn } from "@/lib/cn";
 
 const BuyerAreaMap = dynamic(
@@ -17,35 +17,55 @@ const BuyerAreaMap = dynamic(
 
 function MapSkeleton() {
   return (
-    <div className="flex h-[300px] items-center justify-center rounded-lg border border-dashed border-rule text-sm text-subtle">
+    <div className="flex min-h-[200px] flex-1 items-center justify-center rounded-md border border-dashed border-rule text-[13px] text-subtle">
       Laddar karta…
     </div>
   );
 }
 
 const dwellingOptions = [
-  { value: "lagenhet", label: "Lägenhet" },
+  { value: "bostadsratt", label: "Bostadsrätt" },
   { value: "radhus_kedje", label: "Radhus / kedjehus" },
   { value: "villa_parhus", label: "Villa / parhus" },
   { value: "fritid", label: "Fritidshus" },
   { value: "ovrig", label: "Övrigt" },
 ];
 
-const roomOptions = [
-  { value: "1rok", label: "1 rok" },
-  { value: "2rok", label: "2 rok" },
-  { value: "3rok", label: "3 rok" },
-  { value: "4rok", label: "4+ rok" },
-  { value: "okort", label: "Spelar ingen roll på antal rum ännu" },
-];
+const KVM_MIN_AREA = 25;
+const KVM_MAX_AREA = 300;
+const KVM_STEP = 5;
 
-const labelCn = "mb-1.5 block text-xs font-semibold uppercase tracking-wide text-subtle";
+const BUDGET_ABS_MIN = 250_000;
+const BUDGET_ABS_MAX = 40_000_000;
+const BUDGET_STEP = 125_000;
+
+const ROOM_ABS_MIN = 1;
+const ROOM_ABS_MAX = 5;
+
+function clamp(n: number, lo: number, hi: number) {
+  return Math.min(Math.max(n, lo), hi);
+}
+
+function fmtSek(n: number) {
+  return `${Intl.NumberFormat("sv-SE").format(Math.round(n))}\u202fkr`;
+}
+
+function roomLbl(n: number) {
+  if (n >= 5) return "5 eller flera rum";
+  return `${n} rum`;
+}
+
+const labelCn =
+  "mb-0.5 flex justify-between gap-2 text-[11px] font-semibold uppercase tracking-wide text-subtle [&_span:last-child]:shrink-0 [&_span:last-child]:tabular-nums [&_span:last-child]:text-[13px] [&_span:last-child]:font-medium [&_span:last-child]:normal-case [&_span:last-child]:text-fg";
 
 const selectCn =
-  "mt-1 w-full rounded-md border border-rule bg-bg px-3 py-2.5 text-[15px] text-fg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 focus-visible:ring-offset-bg";
+  "mt-1 w-full rounded-md border border-rule bg-bg px-2 py-1.5 text-[14px] text-fg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-1 focus-visible:ring-offset-bg";
 
 const inpCn =
-  "mt-1 w-full rounded-md border border-rule bg-bg px-3 py-2.5 text-[15px] text-fg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 focus-visible:ring-offset-bg";
+  "mt-1 w-full rounded-md border border-rule bg-bg px-2 py-1.5 text-[14px] text-fg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-1 focus-visible:ring-offset-bg";
+
+const rangeCn =
+  "h-7 w-full cursor-pointer accent-green sm:h-8";
 
 function CheckboxRow({
   checked,
@@ -57,10 +77,10 @@ function CheckboxRow({
   label: string;
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-2.5 rounded-md py-1.5 text-[15px]">
+    <label className="flex cursor-pointer items-start gap-2 text-[13px] leading-snug">
       <input
         type="checkbox"
-        className="mt-1 accent-green"
+        className="mt-0.5 accent-green"
         checked={checked}
         onChange={(e) => onChecked(e.target.checked)}
       />
@@ -77,9 +97,11 @@ function FieldGroup({
   children: ReactNode;
 }) {
   return (
-    <fieldset className="rounded-lg border border-rule p-5">
-      <legend className="px-2 font-display text-[15px] font-semibold text-fg">{legend}</legend>
-      <div className="mt-3 space-y-4">{children}</div>
+    <fieldset className="rounded-md border border-rule p-3 sm:p-3.5">
+      <legend className="px-1.5 font-display text-[13px] font-semibold text-fg">
+        {legend}
+      </legend>
+      <div className="mt-2 space-y-3">{children}</div>
     </fieldset>
   );
 }
@@ -98,16 +120,21 @@ export default function BuyerForm() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [dwellingType, setDwellingType] = useState("");
-  const [rooms, setRooms] = useState("");
-  const [areaSqmMin, setAreaSqmMin] = useState("");
-  const [areaSqmMax, setAreaSqmMax] = useState("");
-  const [budgetMinSEK, setBudgetMinSEK] = useState("");
-  const [budgetMaxSEK, setBudgetMaxSEK] = useState("");
+
+  const [roomMin, setRoomMin] = useState(2);
+  const [roomMax, setRoomMax] = useState(4);
+
+  const [kvmMin, setKvmMin] = useState(35);
+  const [kvmMax, setKvmMax] = useState(95);
+
+  const [budgetMinSEK, setBudgetMinSEK] = useState(2_750_000);
+  const [budgetMaxSEK, setBudgetMaxSEK] = useState(5_500_000);
+
   const [timeline, setTimeline] = useState<Timeline>("nu");
-  const [financing, setFinancing] = useState<Financing>("banklan");
+  const [loanApproved, setLoanApproved] = useState(false);
+
   const [balcony, setBalcony] = useState(false);
   const [elevator, setElevator] = useState(false);
-  const [petFriendly, setPetFriendly] = useState(false);
   const [parkingWanted, setParkingWanted] = useState(false);
   const [newerThan1990, setNewerThan1990] = useState(false);
   const [renovationOk, setRenovationOk] = useState(true);
@@ -126,6 +153,58 @@ export default function BuyerForm() {
     [],
   );
 
+  const setRoomMinAdj = useCallback((v: number) => {
+    const next = clamp(v, ROOM_ABS_MIN, ROOM_ABS_MAX);
+    setRoomMin(next);
+    setRoomMax((max) => (max < next ? next : max));
+  }, []);
+
+  const setRoomMaxAdj = useCallback((v: number) => {
+    const next = clamp(v, ROOM_ABS_MIN, ROOM_ABS_MAX);
+    setRoomMax(next);
+    setRoomMin((min) => (min > next ? next : min));
+  }, []);
+
+  const setKvmMinAdj = useCallback((v: number) => {
+    const snapped = clamp(
+      Math.round(v / KVM_STEP) * KVM_STEP,
+      KVM_MIN_AREA,
+      KVM_MAX_AREA,
+    );
+    setKvmMin(snapped);
+    setKvmMax((mx) => (mx < snapped ? snapped : mx));
+  }, []);
+
+  const setKvmMaxAdj = useCallback((v: number) => {
+    const snapped = clamp(
+      Math.round(v / KVM_STEP) * KVM_STEP,
+      KVM_MIN_AREA,
+      KVM_MAX_AREA,
+    );
+    setKvmMax(snapped);
+    setKvmMin((mn) => (mn > snapped ? snapped : mn));
+  }, []);
+
+  const setBudgetMinAdj = useCallback((v: number) => {
+    const snapped = clamp(
+      Math.round(v / BUDGET_STEP) * BUDGET_STEP,
+      BUDGET_ABS_MIN,
+      BUDGET_ABS_MAX,
+    );
+    setBudgetMinSEK(snapped);
+    setBudgetMaxSEK((mx) => (mx < snapped ? snapped : mx));
+  }, []);
+
+  const setBudgetMaxAdj = useCallback((v: number) => {
+    const snapped = clamp(
+      Math.round(v / BUDGET_STEP) * BUDGET_STEP,
+      BUDGET_ABS_MIN,
+      BUDGET_ABS_MAX,
+    );
+    setBudgetMaxSEK(snapped);
+    setBudgetMinSEK((mn) => (mn > snapped ? snapped : mn));
+  }, []);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitErr(null);
@@ -136,16 +215,16 @@ export default function BuyerForm() {
       email,
       phone,
       dwellingType,
-      rooms,
-      areaSqmMin: areaSqmMin.trim() === "" ? null : areaSqmMin,
-      areaSqmMax: areaSqmMax.trim() === "" ? null : areaSqmMax,
-      budgetMinSEK: budgetMinSEK.replace(/\s+/g, ""),
-      budgetMaxSEK: budgetMaxSEK.replace(/\s+/g, ""),
+      roomMin,
+      roomMax,
+      areaSqmMin: kvmMin,
+      areaSqmMax: kvmMax,
+      budgetMinSEK,
+      budgetMaxSEK,
       timeline,
-      financing,
+      loanApproved,
       balcony,
       elevator,
-      petFriendly,
       parkingWanted,
       newerThan1990,
       renovationOk,
@@ -181,30 +260,32 @@ export default function BuyerForm() {
   };
 
   return (
-    <div className="min-h-dvh bg-bg pb-16">
+    <div className="min-h-dvh bg-bg pb-12">
       <SiteHeader />
 
-      <div className="mx-auto max-w-5xl px-6 pb-8 pt-8">
-        <p className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-green">
+      <div className="mx-auto max-w-4xl px-4 pb-6 pt-5">
+        <p className="font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-green">
           Köparsignal
         </p>
-        <h1 className="font-display mt-2 text-4xl font-bold tracking-tight text-fg sm:text-[2.65rem] sm:leading-tight">
-          Säg vad du vill ha på riktigt
+        <h1 className="font-display mt-1 text-2xl font-bold tracking-tight text-fg sm:text-4xl">
+          Dra i reglagen — kartan till höger
         </h1>
-        <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-subtle">
-          Kolla i rutorna nedan och rita gärna var på kartan det känns rätt – från
-          en huslängd till hela stadssiluetten.
+        <p className="mt-1.5 max-w-xl text-[13px] leading-snug text-subtle">
+          Rum · kvm · budget med min/max · korta kryss för det som stämmer överst.
         </p>
 
         <form
           onSubmit={handleSubmit}
-          className="mt-10 grid gap-10 lg:grid-cols-[1fr,min(46%,560px)] lg:gap-12 xl:gap-14"
+          className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_min(44%,460px)] lg:gap-7"
           noValidate
         >
-          <div className="space-y-8">
+          <div className="space-y-4">
             <FieldGroup legend="Kontakt">
               <div>
-                <label className={labelCn}>Namn</label>
+                <label className={labelCn}>
+                  <span>Namn</span>
+                  <span />
+                </label>
                 <input
                   className={inpCn}
                   name="name"
@@ -214,9 +295,12 @@ export default function BuyerForm() {
                   autoComplete="name"
                 />
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <div>
-                  <label className={labelCn}>Mejl</label>
+                  <label className={labelCn}>
+                    <span>Mejl</span>
+                    <span />
+                  </label>
                   <input
                     className={inpCn}
                     name="email"
@@ -228,7 +312,10 @@ export default function BuyerForm() {
                   />
                 </div>
                 <div>
-                  <label className={labelCn}>Telefon</label>
+                  <label className={labelCn}>
+                    <span>Telefon</span>
+                    <span />
+                  </label>
                   <input
                     className={inpCn}
                     name="phone"
@@ -242,99 +329,136 @@ export default function BuyerForm() {
               </div>
             </FieldGroup>
 
-            <FieldGroup legend="Boende och yta">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className={labelCn}>Boende</label>
-                  <select
-                    className={selectCn}
-                    name="dwellingType"
-                    required
-                    value={dwellingType}
-                    onChange={(e) => setDwellingType(e.target.value)}
-                  >
-                    <option value="">Välj…</option>
-                    {dwellingOptions.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCn}>Antal rum (ca)</label>
-                  <select
-                    className={selectCn}
-                    name="rooms"
-                    required
-                    value={rooms}
-                    onChange={(e) => setRooms(e.target.value)}
-                  >
-                    <option value="">Välj…</option>
-                    {roomOptions.map((o) => (
-                      <option key={o.value} value={o.value}>
-                        {o.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            <FieldGroup legend="Boende">
+              <div>
+                <label className={labelCn}>
+                  <span>Typ</span>
+                  <span />
+                </label>
+                <select
+                  className={selectCn}
+                  name="dwellingType"
+                  required
+                  value={dwellingType}
+                  onChange={(e) => setDwellingType(e.target.value)}
+                >
+                  <option value="">Välj…</option>
+                  {dwellingOptions.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
               </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className={labelCn}>kvm min</label>
-                  <input
-                    className={inpCn}
-                    name="areaSqmMin"
-                    inputMode="numeric"
-                    placeholder="–"
-                    value={areaSqmMin}
-                    onChange={(e) => setAreaSqmMin(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className={labelCn}>kvm max</label>
-                  <input
-                    className={inpCn}
-                    name="areaSqmMax"
-                    inputMode="numeric"
-                    placeholder="–"
-                    value={areaSqmMax}
-                    onChange={(e) => setAreaSqmMax(e.target.value)}
-                  />
-                </div>
-              </div>
-            </FieldGroup>
 
-            <FieldGroup legend="Budget och tidplan">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className={labelCn}>Budget från (SEK)</label>
-                  <input
-                    className={inpCn}
-                    name="budgetMinSEK"
-                    inputMode="numeric"
-                    placeholder="3800000"
-                    required
-                    value={budgetMinSEK}
-                    onChange={(e) => setBudgetMinSEK(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className={labelCn}>Budget upp till (SEK)</label>
-                  <input
-                    className={inpCn}
-                    name="budgetMaxSEK"
-                    inputMode="numeric"
-                    placeholder="4900000"
-                    required
-                    value={budgetMaxSEK}
-                    onChange={(e) => setBudgetMaxSEK(e.target.value)}
-                  />
-                </div>
+              <div>
+                <label className={labelCn}>
+                  <span>Lägst antal rum</span>
+                  <span>{roomLbl(roomMin)}</span>
+                </label>
+                <input
+                  className={rangeCn}
+                  type="range"
+                  min={ROOM_ABS_MIN}
+                  max={ROOM_ABS_MAX}
+                  step={1}
+                  value={roomMin}
+                  onChange={(e) =>
+                    setRoomMinAdj(Number.parseInt(e.target.value, 10))
+                  }
+                />
               </div>
               <div>
-                <label className={labelCn}>Flytta in</label>
+                <label className={labelCn}>
+                  <span>Högst antal rum</span>
+                  <span>{roomLbl(roomMax)}</span>
+                </label>
+                <input
+                  className={rangeCn}
+                  type="range"
+                  min={ROOM_ABS_MIN}
+                  max={ROOM_ABS_MAX}
+                  step={1}
+                  value={roomMax}
+                  onChange={(e) =>
+                    setRoomMaxAdj(Number.parseInt(e.target.value, 10))
+                  }
+                />
+              </div>
+
+              <div>
+                <label className={labelCn}>
+                  <span>Storlek (kvm)</span>
+                  <span>
+                    {kvmMin}–{kvmMax}&nbsp;m²
+                  </span>
+                </label>
+                <input
+                  className={rangeCn}
+                  type="range"
+                  min={KVM_MIN_AREA}
+                  max={KVM_MAX_AREA}
+                  step={KVM_STEP}
+                  value={kvmMin}
+                  onChange={(e) =>
+                    setKvmMinAdj(Number.parseFloat(e.target.value))
+                  }
+                  aria-valuetext={`${kvmMin} till ${kvmMax} kvadratmeter`}
+                />
+                <input
+                  className={cn(rangeCn, "mt-1.5")}
+                  type="range"
+                  min={KVM_MIN_AREA}
+                  max={KVM_MAX_AREA}
+                  step={KVM_STEP}
+                  value={kvmMax}
+                  onChange={(e) =>
+                    setKvmMaxAdj(Number.parseFloat(e.target.value))
+                  }
+                  aria-valuetext={`${kvmMin} till ${kvmMax} kvadratmeter`}
+                />
+              </div>
+
+              <div>
+                <label className={labelCn}>
+                  <span>Budget</span>
+                  <span>
+                    {fmtSek(budgetMinSEK)} – {fmtSek(budgetMaxSEK)}
+                  </span>
+                </label>
+                <input
+                  className={rangeCn}
+                  type="range"
+                  min={BUDGET_ABS_MIN}
+                  max={BUDGET_ABS_MAX}
+                  step={BUDGET_STEP}
+                  value={budgetMinSEK}
+                  onChange={(e) =>
+                    setBudgetMinAdj(Number.parseFloat(e.target.value))
+                  }
+                />
+                <input
+                  className={cn(rangeCn, "mt-1.5")}
+                  type="range"
+                  min={BUDGET_ABS_MIN}
+                  max={BUDGET_ABS_MAX}
+                  step={BUDGET_STEP}
+                  value={budgetMaxSEK}
+                  onChange={(e) =>
+                    setBudgetMaxAdj(Number.parseFloat(e.target.value))
+                  }
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="timeline"
+                  className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wide text-subtle"
+                >
+                  Flytta in
+                </label>
                 <select
+                  id="timeline"
                   className={selectCn}
                   name="timeline"
                   required
@@ -350,57 +474,31 @@ export default function BuyerForm() {
                   )}
                 </select>
               </div>
-              <div>
-                <span className={labelCn}>Finansiering</span>
-                <div className="mt-2 flex flex-wrap gap-3">
-                  {(
-                    [
-                      ["kontant", "Kontant / eget kapital"],
-                      ["banklan", "Bolån"],
-                      ["osaker", "Osäker ännu"],
-                    ] as const
-                  ).map(([val, lab]) => (
-                    <label
-                      key={val}
-                      className={cn(
-                        "flex cursor-pointer items-center gap-2 rounded-md border border-rule px-3 py-2 text-sm transition-colors",
-                        financing === val
-                          ? "border-green bg-green-mist/40 text-fg dark:bg-green-mist/20"
-                          : "hover:border-green/50",
-                      )}
-                    >
-                      <input
-                        type="radio"
-                        name="financing"
-                        className="accent-green"
-                        checked={financing === val}
-                        onChange={() => setFinancing(val)}
-                      />
-                      {lab}
-                    </label>
-                  ))}
-                </div>
-              </div>
             </FieldGroup>
 
-            <FieldGroup legend="Checklista — skrolla bara">
-              <div className="grid gap-2 sm:grid-cols-2">
-                <CheckboxRow checked={balcony} onChecked={setBalcony} label="Balkong eller terrass" />
-                <CheckboxRow checked={elevator} onChecked={setElevator} label="Hiss" />
-                <CheckboxRow checked={petFriendly} onChecked={setPetFriendly} label="Djur i bilden" />
-                <CheckboxRow checked={parkingWanted} onChecked={setParkingWanted} label="Garage / plats" />
-                <CheckboxRow checked={newerThan1990} onChecked={setNewerThan1990} label="Helst byggt efter 1990" />
-                <CheckboxRow checked={renovationOk} onChecked={setRenovationOk} label="Renoveringsobjekt okej" />
+            <FieldGroup legend="Tillval">
+              <div className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
+                <CheckboxRow
+                  checked={loanApproved}
+                  onChecked={setLoanApproved}
+                  label="Har lånelöfte (eller bank utlovar snart)"
+                />
+                <CheckboxRow checked={balcony} onChecked={setBalcony} label="Vill kunna ha balkong eller uteplats" />
+                <CheckboxRow checked={elevator} onChecked={setElevator} label="Behöver hiss till våningen" />
+                <CheckboxRow checked={parkingWanted} onChecked={setParkingWanted} label="Parkering eller garage" />
+                <CheckboxRow checked={newerThan1990} onChecked={setNewerThan1990} label="Hellre hus från 1990 eller senare" />
+                <CheckboxRow checked={renovationOk} onChecked={setRenovationOk} label="Renovering är okej" />
               </div>
               <div>
                 <label className={labelCn}>
-                  Tillägg (gatan, ett hus eller helt öppet kort)
+                  <span>Om du vill säga på ord</span>
+                  <span />
                 </label>
                 <textarea
-                  className={cn(inpCn, "min-h-[88px] resize-y")}
+                  className={cn(inpCn, "min-h-[68px] resize-y py-2")}
                   name="areaNotes"
-                  placeholder='T.ex. "nära mamma på Allévägen" eller hela innerstan'
-                  rows={4}
+                  placeholder='Gatan, husnumret, eller "hela Kungsholmen"…'
+                  rows={3}
                   value={areaNotes}
                   onChange={(e) => setAreaNotes(e.target.value)}
                 />
@@ -408,12 +506,12 @@ export default function BuyerForm() {
             </FieldGroup>
 
             {submitErr ? (
-              <p className="rounded-md border border-rule bg-green-mist/50 px-3 py-2 text-sm text-fg dark:bg-green-soft/20">
+              <p className="rounded-md border border-rule bg-green-mist/50 px-2.5 py-1.5 text-[13px] text-fg dark:bg-green-soft/20">
                 {submitErr}
               </p>
             ) : null}
 
-            <div className="flex flex-wrap items-center gap-4 pb-8 lg:hidden">
+            <div className="flex flex-wrap items-center gap-3 pb-4 lg:hidden">
               <Button type="submit" disabled={busy}>
                 {busy ? "Skickar…" : "Skicka köpsignal"}
               </Button>
@@ -423,20 +521,20 @@ export default function BuyerForm() {
             </div>
           </div>
 
-          <div className="lg:sticky lg:top-6 lg:self-start">
+          <div className="flex min-h-[min(520px,70vh)] flex-col gap-2 lg:sticky lg:top-5 lg:self-start">
             <BuyerAreaMap onChange={onMapChange} />
             {mapGeoJson?.features?.length ? (
-              <p className="mt-2 text-[13px] text-green">
+              <p className="text-[11px] text-green">
                 {mapGeoJson.features.length === 1
-                  ? "1 figur ritad ✓"
-                  : `${mapGeoJson.features.length} figurer ✓`}
+                  ? "Område markerat ✓"
+                  : `${mapGeoJson.features.length} markerade ytor`}
               </p>
             ) : (
-              <p className="mt-2 text-[13px] text-subtle">
-                Ännu inte ritat på kartan (valfritt).
+              <p className="text-[11px] text-subtle">
+                Kartan är valfri — rita eller hoppa över.
               </p>
             )}
-            <div className="mt-6 hidden flex-wrap items-center gap-4 lg:flex">
+            <div className="mt-auto hidden flex-wrap items-center gap-3 lg:flex lg:pb-6">
               <Button type="submit" disabled={busy}>
                 {busy ? "Skickar…" : "Skicka köpsignal"}
               </Button>
