@@ -13,25 +13,26 @@ export default function AgentsPortalPage() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-accent dark:text-accent-foreground">
-                  For agents & teams
+                  För mäklare och team
                 </p>
                 <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
-                  Agent overview
+                  Mäklaröversikt
                 </h1>
                 <p className="mt-2 text-sm leading-6 text-muted">
-                  Coming soon: filterable buyer list, copy contact details. Helps
-                  you focus on neighbourhoods and mandates you already cover —
-                  alongside buyers registering their intent upfront.
+                  Kommer snart: filtrerbar köparlista och kopiera
+                  kontaktuppgifter. Hjälper dig fokusera på områden och uppdrag
+                  du redan täcker – tillsammans med köpare som anmält sitt
+                  intresse tydligt.
                 </p>
               </div>
               <Button variant="secondary" asChild>
-                <Link href="/buyer">Buyer signup</Link>
+                <Link href="/buyer">Köparanmälan</Link>
               </Button>
             </div>
             <div className="mt-6 rounded-2xl border border-dashed border-border-brand bg-surface-subtle/80 p-6 text-sm text-muted dark:bg-accent-soft/10 dark:text-muted">
-              Shared link only — no passwords in this MVP. Buyers use the site
-              first; bookmark this URL for recurring checks if you collaborate in
-              a team.
+              Endast delad webbadress – inga lösenord i den här MVP-versionen.
+              Köpare börjar på startsidan; bokmärk den här länken om du behöver
+              återkomma ofta eller dela den i ett team.
             </div>
           </div>
         </Container>

@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Know what I want · buyer & agent MVP",
+  title: "Vet vad jag vill · köpare & mäklare (MVP)",
   description:
-    "Register what apartment you are looking for; brokers who cover those areas can contact you directly. Agents see qualified buyer intent.",
+    "Anmäl vilket boende du söker – mäklare som jobbar i dina områden kan kontakta dig direkt. Mäklare ser kvalificerat köparintresse.",
 };
 
 export default function RootLayout({
@@ -25,10 +25,10 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="sv"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
+      <body className="flex min-h-full flex-col bg-background text-foreground">
         {children}
       </body>
     </html>

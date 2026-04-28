@@ -49,7 +49,9 @@ export function Button(props: ButtonProps) {
   if (asChild) {
     const child = Children.only(children);
     if (!isValidElement(child)) {
-      throw new Error("Button with asChild expects a single React element.");
+      throw new Error(
+        'Button med asChild kräver exakt ett React-element som barn.',
+      );
     }
     const prev = child.props as { className?: string };
     return cloneElement(child as ReactElement<Record<string, unknown>>, {
