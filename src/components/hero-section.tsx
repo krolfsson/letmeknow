@@ -68,22 +68,30 @@ export function HeroSection() {
               </Link>
             </div>
 
-            <div className="mt-10 flex flex-col items-center gap-4">
+            <div
+              role="list"
+              className="mt-10 flex min-w-0 flex-col gap-3 sm:gap-4"
+            >
               {benefits.map((benefit, index) => (
                 <p
                   key={benefit.oldWay}
-                  className="flex items-center gap-2 text-base motion-safe:[animation:fade-in_400ms_ease-out_forwards] md:text-lg"
+                  role="listitem"
+                  className="flex w-full min-w-0 flex-nowrap items-center justify-center gap-x-1 leading-snug text-[clamp(0.68rem,2.95vw,0.9375rem)] motion-safe:[animation:fade-in_400ms_ease-out_forwards] sm:gap-x-2 sm:text-base sm:leading-normal md:text-lg"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <Check
-                    className="h-4 w-4 stroke-[1.8] text-emerald-500 drop-shadow-[0_2px_6px_rgba(16,185,129,0.34)]"
+                    className="size-3.5 shrink-0 stroke-[1.8] text-emerald-500 drop-shadow-[0_2px_6px_rgba(16,185,129,0.34)] sm:size-4"
                     aria-hidden
                   />
-                  <span className="text-gray-400 line-through opacity-70">
+                  <span className="shrink-0 whitespace-nowrap text-gray-400 line-through opacity-70">
                     {benefit.oldWay}
                   </span>
-                  <span className="text-gray-900">-</span>
-                  <span className="font-semibold text-gray-900">{benefit.newWay}</span>
+                  <span className="shrink-0 text-gray-700" aria-hidden>
+                    –
+                  </span>
+                  <span className="whitespace-nowrap font-semibold text-gray-900">
+                    {benefit.newWay}
+                  </span>
                 </p>
               ))}
             </div>
