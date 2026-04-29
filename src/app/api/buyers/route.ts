@@ -6,7 +6,7 @@ import {
   type AmenityId,
   type BuyerLead,
 } from "@/lib/buyers";
-import { isValidDistrictId } from "@/lib/stockholm-stadsdelar";
+import { isValidLocationId } from "@/lib/location-ids";
 
 function parseBudget(v: unknown): number {
   const n = typeof v === "number" ? v : typeof v === "string" ? parseInt(v, 10) : NaN;
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
           .map((s) => s.trim())
           .filter(Boolean),
       )];
-      if (!cand.length || cand.some((id) => !isValidDistrictId(id))) {
+      if (!cand.length || cand.some((id) => !isValidLocationId(id))) {
         missing.push("districtIds");
       } else {
         districtIds = cand;

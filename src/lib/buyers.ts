@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from "fs/promises";
 import { join } from "path";
-import { isValidDistrictId } from "@/lib/stockholm-stadsdelar";
+import { isValidLocationId } from "@/lib/location-ids";
 
 export type Timeline = "nu" | "3man" | "6man";
 export type AmenityId = "balcony" | "fireplace" | "elevator";
@@ -45,7 +45,7 @@ function parseBuyerRow(raw: Record<string, unknown>): BuyerLead {
       .filter((x): x is string => typeof x === "string")
       .map((s) => s.trim())
       .filter(Boolean)
-      .filter(isValidDistrictId);
+      .filter(isValidLocationId);
   }
 
   const amenitiesRaw = raw.amenityIds;

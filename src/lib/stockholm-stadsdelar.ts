@@ -208,6 +208,13 @@ export const STOCKHOLM_STADSDELAR = STOCKHOLM_AREAS;
 
 const byId = new Map(STOCKHOLM_AREAS.map((d) => [d.id, d]));
 
+/** Stockholms stads kommunkod GeoNames/admin2 för landets kommunfilt. */
+export const STOCKHOLM_KOMMUNKOD = "0180";
+
+export function tryGetStockholmArea(id: string) {
+  return byId.get(id);
+}
+
 export function isValidDistrictId(id: string): boolean {
   return byId.has(id);
 }

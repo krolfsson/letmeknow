@@ -195,7 +195,7 @@ export default function BuyerForm() {
     setSubmitErr(null);
 
     if (districtIds.length === 0) {
-      setSubmitErr("Välj minst ett område i Stockholm (stadsdel eller lokalt namn).");
+      setSubmitErr("Välj minst ett område, en stad eller ett samhälle.");
       return;
     }
 
@@ -272,7 +272,7 @@ export default function BuyerForm() {
           className="relative mx-auto max-w-2xl space-y-4 rounded-2xl border border-white/40 bg-white/80 px-4 py-5 shadow-[0_10px_40px_rgba(0,0,0,0.06)] ring-1 ring-white/50 backdrop-blur-md sm:px-6 sm:py-6"
           noValidate
         >
-          <FieldGroup legend="Område i Stockholm">
+          <FieldGroup legend="Var vill du bo">
             <BuyerDistrictPicker value={districtIds} onChange={setDistrictIds} />
           </FieldGroup>
 

@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react
 import type { BuyerLead, Timeline } from "@/lib/buyers";
 import { BuyerDistrictPicker } from "@/components/buyer/buyer-district-picker";
 import { DualEndedRange } from "@/components/buyer/dual-ended-range";
-import { districtIdsToNames } from "@/lib/stockholm-stadsdelar";
-import { toStadsdelClusterId } from "@/lib/stockholm-stadsdelar";
+import { placeringMatcharFilter } from "@/lib/location-match";
+import { locationLabelsForIds, labelForPlacementId } from "@/lib/location-labels";
+import { loadSwedenPlaceIndex } from "@/lib/sweden-place-index";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/cn";
 
@@ -119,8 +120,12 @@ function timelineAbbr(tl: Timeline) {
   return "6 m";
 }
 
-function areasPreview(ids: string[], max = 2) {
-  const names = districtIdsToNames(ids);
+function areasPreview(
+  ids: string[],
+  labelById: ReadonlyMap<string, string>,
+  max = 2,
+) {
+  const names = locationLabelsForIds(ids, labelById);
   if (!names.length) return "–";
   if (names.length <= max) return names.join(", ");
   return `${names.slice(0, max).join(", ")} +${names.length - max}`;
@@ -163,6 +168,24 @@ export function AgentLeadsDashboard() {
   const [dwellPick, setDwellPick] = useState<string[]>([]);
   const [loanPick, setLoanPick] = useState<"all" | "yes" | "no">("all");
   const [districtPick, setDistrictPick] = useState<string[]>([]);
+
+  const [geoLabelLookup, setGeoLabelLookup] =
+    useState<ReadonlyMap<string, string> | null>(null);
+  const [kkByGeoForFilter, setKkByGeoForFilter] = useState<Map<
+    string,
+    string
+  > | null>(null);
+
+  useEffect(() => {
+    loadSwedenPlaceIndex()
+      .then(({ labelById, kkByGeoId }) => {
+        setGeoLabelLookup(labelById);
+        setKkByGeoForFilter(kkByGeoId);
+      })
+      .catch(() => {});
+  }, []);
+
+  const placementLabels = geoLabelLookup ?? new Map<string, string>();
 
   const [filtRoomMin, setFiltRoomMin] = useState(ROOM_ABS_MIN);
   const [filtRoomMax, setFiltRoomMax] = useState(ROOM_ABS_MAX);
@@ -242,7 +265,7 @@ export function AgentLeadsDashboard() {
   }, []);
 
   useEffect(() => {
-    void reload();
+    void Promise.resolve().then(() => reload());
   }, [reload]);
 
   const filtered = useMemo(() => {
@@ -269,9 +292,13 @@ export function AgentLeadsDashboard() {
     if (loanPick === "no") list = list.filter((r) => !r.loanApproved);
 
     if (districtPick.length) {
-      const need = new Set(districtPick.map(toStadsdelClusterId));
+      const kk = kkByGeoForFilter ?? new Map<string, string>();
       list = list.filter((r) =>
-        r.districtIds.map(toStadsdelClusterId).some((id) => need.has(id)),
+        r.districtIds.some((buyerPid) =>
+          districtPick.some((filtPid) =>
+            placeringMatcharFilter(buyerPid, filtPid, kk),
+          ),
+        ),
       );
     }
 
@@ -312,6 +339,7 @@ export function AgentLeadsDashboard() {
     filtBudgetMaxSEK,
     filtKvmMin,
     filtKvmMax,
+    kkByGeoForFilter,
   ]);
 
   function clearFilters() {
@@ -382,7 +410,7 @@ export function AgentLeadsDashboard() {
               </label>
             </FilterFieldGroup>
 
-            <FilterFieldGroup legend="Område i Stockholm">
+            <FilterFieldGroup legend="Geografi">
               <BuyerDistrictPicker
                 purpose="agentFilter"
                 value={districtPick}
@@ -541,7 +569,10 @@ export function AgentLeadsDashboard() {
             !err &&
             filtered.map((lead) => {
               const open = expandedId === lead.id;
-              const namesLine = districtIdsToNames(lead.districtIds).join(", ");
+              const namesLine = locationLabelsForIds(
+                lead.districtIds,
+                placementLabels,
+              ).join(", ");
               const metrics = [
                 dwellAbbr(lead.dwellingType),
                 `${lead.roomMin}–${lead.roomMax} r`,
@@ -584,7 +615,7 @@ export function AgentLeadsDashboard() {
                         {metrics}
                       </p>
                       <p className="truncate text-[11px] leading-tight text-gray-500">
-                        {areasPreview(lead.districtIds)}
+                        {areasPreview(lead.districtIds, placementLabels)}
                       </p>
                     </div>
                   </button>
@@ -676,7 +707,7 @@ export function AgentLeadsDashboard() {
                               {lead.districtIds.map((id, i) => (
                                 <li key={`${lead.id}-${id}-${i}`}>
                                   <code className="text-[10px]">{id}</code> —{" "}
-                                  {districtIdsToNames([id])[0] ?? id}
+                                  {labelForPlacementId(id, placementLabels)}
                                 </li>
                               ))}
                             </ul>

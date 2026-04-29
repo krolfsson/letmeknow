@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { SiteHeader } from "@/components/site-header";
-import { Button } from "@/components/ui/button";
 import { TackInner } from "./tack-inner";
 
 /** Kvittens efter formulärskick — läser `?id=` från API-svaret */

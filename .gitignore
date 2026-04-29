@@ -22,6 +22,10 @@
 
 # misc
 .DS_Store
+
+# stor GeoNames-fil vid generering — committa public/sweden-places-search.json
+/data/*.txt
+/data/*.zip
 *.pem
 
 # debug
