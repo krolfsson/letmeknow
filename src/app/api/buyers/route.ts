@@ -2,9 +2,11 @@ import { NextResponse } from "next/server";
 import {
   addBuyerLead,
   isAmenityId,
+  isContactChannelId,
   loadBuyers,
   type AmenityId,
   type BuyerLead,
+  type ContactChannelId,
 } from "@/lib/buyers";
 import { isValidLocationId } from "@/lib/location-ids";
 
@@ -123,6 +125,21 @@ export async function POST(request: Request) {
       }
     }
 
+    const contactRaw = body.contactChannels;
+    const contactChannels: ContactChannelId[] = [];
+    if (Array.isArray(contactRaw)) {
+      for (const value of contactRaw) {
+        if (
+          typeof value === "string" &&
+          isContactChannelId(value) &&
+          !contactChannels.includes(value)
+        ) {
+          contactChannels.push(value);
+        }
+      }
+    }
+    if (!contactChannels.length) missing.push("contactChannels");
+
     if (missing.length) {
       return NextResponse.json({ error: "Invalid form", missing }, { status: 400 });
     }
@@ -144,6 +161,7 @@ export async function POST(request: Request) {
       timeline: tl!,
       amenityIds,
       loanApproved: Boolean(body.loanApproved),
+      contactChannels,
     };
 
     await addBuyerLead(lead);

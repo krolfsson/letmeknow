@@ -8,7 +8,7 @@ import { BuyerDistrictPicker } from "@/components/buyer/buyer-district-picker";
 import { DualEndedRange } from "@/components/buyer/dual-ended-range";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import type { AmenityId, Timeline } from "@/lib/buyers";
+import type { AmenityId, ContactChannelId, Timeline } from "@/lib/buyers";
 
 const dwellingOptions = [
   { value: "bostadsratt", label: "Bostadsrätt" },
@@ -22,6 +22,12 @@ const amenityOptions: { value: AmenityId; label: string }[] = [
   { value: "balcony", label: "Balkong / uteplats / altan" },
   { value: "fireplace", label: "Eldstad" },
   { value: "elevator", label: "Hiss" },
+];
+
+const contactChannelOptions: { value: ContactChannelId; label: string }[] = [
+  { value: "email", label: "Mejl" },
+  { value: "sms", label: "SMS" },
+  { value: "phone", label: "Telefon" },
 ];
 
 const KVM_MIN_AREA = 25;
@@ -119,6 +125,12 @@ export default function BuyerForm() {
 
   const [districtIds, setDistrictIds] = useState<string[]>([]);
 
+  const [contactChannels, setContactChannels] = useState<ContactChannelId[]>([
+    "email",
+    "sms",
+    "phone",
+  ]);
+
   const [submitErr, setSubmitErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -190,12 +202,28 @@ export default function BuyerForm() {
     );
   }, []);
 
+  const toggleContactChannel = useCallback(
+    (id: ContactChannelId, checked: boolean) => {
+      setContactChannels((prev) => {
+        if (checked) return [...new Set([...prev, id])];
+        const next = prev.filter((x) => x !== id);
+        return next.length ? next : prev;
+      });
+    },
+    [],
+  );
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitErr(null);
 
     if (districtIds.length === 0) {
       setSubmitErr("Välj minst ett område, en stad eller ett samhälle.");
+      return;
+    }
+
+    if (contactChannels.length === 0) {
+      setSubmitErr("Välj minst ett sätt att bli kontaktad på (mejl, SMS eller telefon).");
       return;
     }
 
@@ -216,6 +244,7 @@ export default function BuyerForm() {
       timeline,
       amenityIds,
       loanApproved,
+      contactChannels,
     };
 
     try {
@@ -322,6 +351,27 @@ export default function BuyerForm() {
                     autoComplete="tel"
                   />
                 </div>
+              </div>
+              <div>
+                <span className="mb-2 block text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                  Kontakta mig via
+                </span>
+                <div className="flex flex-wrap gap-x-4 gap-y-2">
+                  {contactChannelOptions.map((opt) => (
+                    <CheckboxRow
+                      key={opt.value}
+                      checked={contactChannels.includes(opt.value)}
+                      onChecked={(checked) =>
+                        toggleContactChannel(opt.value, checked)
+                      }
+                      label={opt.label}
+                    />
+                  ))}
+                </div>
+                <p className="mt-1.5 text-[11px] leading-snug text-gray-500">
+                  Minst ett val krävs. Mäklaren ser dina val som små ikoner i
+                  din köpsignal.
+                </p>
               </div>
           </FieldGroup>
 

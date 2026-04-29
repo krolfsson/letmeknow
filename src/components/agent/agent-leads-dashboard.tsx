@@ -1,7 +1,8 @@
 "use client";
 
+import { Mail, MessageSquare, Phone } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { BuyerLead, Timeline } from "@/lib/buyers";
+import type { BuyerLead, ContactChannelId, Timeline } from "@/lib/buyers";
 import { BuyerDistrictPicker } from "@/components/buyer/buyer-district-picker";
 import { DualEndedRange } from "@/components/buyer/dual-ended-range";
 import { placeringMatcharFilter } from "@/lib/location-match";
@@ -68,6 +69,55 @@ function timelinesLabel(tl: Timeline) {
 function amenityList(ids: BuyerLead["amenityIds"]) {
   if (!ids.length) return "Ej angivet";
   return ids.map((id) => amenityLabels[id] ?? id).join(", ");
+}
+
+function contactChannelParts(channels: ContactChannelId[]) {
+  const parts: string[] = [];
+  if (channels.includes("email")) parts.push("mejl");
+  if (channels.includes("sms")) parts.push("SMS");
+  if (channels.includes("phone")) parts.push("telefon");
+  return parts;
+}
+
+function contactChannelAriaLabel(channels: ContactChannelId[]) {
+  const parts = contactChannelParts(channels);
+  return parts.length ? `Kontaktvägar: ${parts.join(", ")}` : "Inga kontaktvägar angivna";
+}
+
+function LeadContactChannelIcons({
+  channels,
+  className,
+}: {
+  channels: BuyerLead["contactChannels"];
+  className?: string;
+}) {
+  const on = new Set(channels);
+  const items: {
+    id: ContactChannelId;
+    Icon: typeof Mail;
+    label: string;
+  }[] = [
+    { id: "email", Icon: Mail, label: "Mejl" },
+    { id: "sms", Icon: MessageSquare, label: "SMS" },
+    { id: "phone", Icon: Phone, label: "Telefon" },
+  ];
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center gap-0.5 text-emerald-600",
+        className,
+      )}
+      aria-label={contactChannelAriaLabel(channels)}
+    >
+      {items.map(({ id, Icon, label }) =>
+        on.has(id) ? (
+          <span key={id} title={label} className="inline-flex">
+            <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden />
+          </span>
+        ) : null,
+      )}
+    </span>
+  );
 }
 
 function fmtDate(iso: string) {
@@ -599,13 +649,14 @@ export function AgentLeadsDashboard() {
                       {open ? "▼" : "▶"}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0">
-                        <span className="truncate text-[13px] font-semibold text-gray-900">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                        <span className="min-w-0 truncate text-[13px] font-semibold text-gray-900">
                           {lead.name}
                         </span>
                         <span className="shrink-0 text-[10px] tabular-nums text-gray-500">
                           {fmtDateShort(lead.createdAt)}
                         </span>
+                        <LeadContactChannelIcons channels={lead.contactChannels} />
                       </div>
                       <p className="truncate text-[11px] leading-tight text-gray-600">
                         {metrics}
@@ -618,7 +669,8 @@ export function AgentLeadsDashboard() {
 
                   {open ? (
                     <div className="border-t border-gray-100 bg-green-50/50 px-3 py-3 sm:pl-9">
-                      <div className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-[13px]">
+                      <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px]">
+                        <LeadContactChannelIcons channels={lead.contactChannels} />
                         <a
                           href={`mailto:${lead.email}`}
                           className="font-medium text-emerald-600 underline-offset-2 hover:underline"
@@ -721,6 +773,18 @@ export function AgentLeadsDashboard() {
                           </dt>
                           <dd className="mt-0.5">
                             {lead.loanApproved ? "Ja (enligt köpare)" : "Ej angivet"}
+                          </dd>
+                        </div>
+                        <div className="rounded border border-gray-100 bg-white/65 p-2 sm:col-span-2 lg:col-span-3 ">
+                          <dt className="text-[10px] uppercase tracking-wide text-gray-500">
+                            Kontaktvägar
+                          </dt>
+                          <dd className="mt-0.5 flex items-center gap-2">
+                            <LeadContactChannelIcons channels={lead.contactChannels} />
+                            <span className="text-[11px] text-gray-600">
+                              {contactChannelParts(lead.contactChannels).join(", ") ||
+                                "–"}
+                            </span>
                           </dd>
                         </div>
                       </dl>

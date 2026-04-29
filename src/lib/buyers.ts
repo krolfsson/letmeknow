@@ -11,6 +11,36 @@ export function isAmenityId(value: string): value is AmenityId {
   return (AMENITY_IDS as readonly string[]).includes(value);
 }
 
+export type ContactChannelId = "email" | "sms" | "phone";
+
+export const CONTACT_CHANNEL_IDS = [
+  "email",
+  "sms",
+  "phone",
+] as const satisfies readonly ContactChannelId[];
+
+export function isContactChannelId(value: string): value is ContactChannelId {
+  return (CONTACT_CHANNEL_IDS as readonly string[]).includes(value);
+}
+
+const LEGACY_CONTACT_CHANNELS: ContactChannelId[] = [
+  "email",
+  "sms",
+  "phone",
+];
+
+function parseContactChannels(raw: Record<string, unknown>): ContactChannelId[] {
+  const chRaw = raw.contactChannels;
+  if (!Array.isArray(chRaw)) return [...LEGACY_CONTACT_CHANNELS];
+  const out: ContactChannelId[] = [];
+  for (const v of chRaw) {
+    if (typeof v === "string" && isContactChannelId(v) && !out.includes(v)) {
+      out.push(v);
+    }
+  }
+  return out.length ? out : [...LEGACY_CONTACT_CHANNELS];
+}
+
 /** Det köpare lämnar in från formuläret */
 export type BuyerLead = {
   id: string;
@@ -29,6 +59,8 @@ export type BuyerLead = {
   timeline: Timeline;
   amenityIds: AmenityId[];
   loanApproved: boolean;
+  /** Hur köparen vill bli kontaktad (mejl / SMS / telefon). */
+  contactChannels: ContactChannelId[];
 };
 
 const FILENAME = "buyers.json";
@@ -87,6 +119,7 @@ function parseBuyerRow(raw: Record<string, unknown>): BuyerLead {
         : "nu",
     amenityIds,
     loanApproved: Boolean(raw.loanApproved),
+    contactChannels: parseContactChannels(raw),
   };
 }
 
