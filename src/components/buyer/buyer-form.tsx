@@ -275,10 +275,10 @@ export default function BuyerForm() {
   };
 
   return (
-    <div className="min-h-dvh bg-gradient-to-b from-white to-green-50/40 pb-16">
+    <div className="min-h-dvh min-w-0 overflow-x-hidden bg-gradient-to-b from-white to-green-50/40 pb-16">
       <SiteHeader />
 
-      <div className="relative mx-auto max-w-4xl px-4 pb-6 pt-10">
+      <div className="relative mx-auto min-w-0 max-w-4xl px-4 pb-6 pt-10">
         <div className="pointer-events-none absolute inset-x-0 top-14 flex justify-center">
           <div className="h-[260px] w-[560px] rounded-full bg-emerald-400/15 opacity-40 blur-3xl" />
         </div>
@@ -298,7 +298,7 @@ export default function BuyerForm() {
 
         <form
           onSubmit={handleSubmit}
-          className="relative mx-auto max-w-2xl space-y-4 rounded-2xl border border-white/40 bg-white/80 px-4 py-5 shadow-[0_10px_40px_rgba(0,0,0,0.06)] ring-1 ring-white/50 backdrop-blur-md sm:px-6 sm:py-6"
+          className="relative mx-auto min-w-0 max-w-2xl space-y-4 overflow-x-hidden rounded-2xl border border-white/40 bg-white/80 px-4 py-5 shadow-[0_10px_40px_rgba(0,0,0,0.06)] ring-1 ring-white/50 backdrop-blur-md sm:px-6 sm:py-6"
           noValidate
         >
           <FieldGroup legend="Var vill du bo">

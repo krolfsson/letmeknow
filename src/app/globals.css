@@ -70,6 +70,7 @@ body {
 /* Två-thumb range på samma [min,max]-span — inga lösa spårgrönskift från webbläsaren */
 .dual-ended-shell {
   position: relative;
+  overscroll-behavior-x: none;
   /* Samma mått som spår + tumnagel så pricken sitter på linjen (WebKit/Moz ritar annars snett) */
   --de-track-h: 10px;
   --de-thumb-h: 18px;
@@ -89,6 +90,7 @@ body {
   left: 0;
   top: 0;
   cursor: grab;
+  touch-action: none;
 }
 
 .dual-ended-input::-webkit-slider-thumb {
