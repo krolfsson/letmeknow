@@ -26,9 +26,9 @@ export function HeroSection() {
             href="/"
             className="group inline-flex items-baseline gap-0.5 text-4xl font-semibold tracking-[-0.04em] text-gray-950 opacity-95 transition-opacity hover:opacity-100 sm:text-[2.55rem]"
           >
-            <span>want</span>
+            <span>letme</span>
             <span className="text-emerald-600 transition-colors group-hover:text-indigo-600">
-              i
+              know
             </span>
           </Link>
         </div>

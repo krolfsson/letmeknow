@@ -8,7 +8,7 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "wanti",
+  title: "letmeknow.se",
   description:
     "Säg vad du vill bo i — gata, hus eller helt brett — så hittar mäklare leads som faktiskt matchar.",
 };

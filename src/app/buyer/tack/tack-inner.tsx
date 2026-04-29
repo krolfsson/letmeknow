@@ -22,7 +22,7 @@ export function TackInner() {
           Toppen — du finns med.
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-gray-600">
-          wanti har sparat din signal
+          letmeknow har sparat din signal
           {id ? (
             <>
               {" "}

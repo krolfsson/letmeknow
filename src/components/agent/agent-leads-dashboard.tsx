@@ -5,6 +5,7 @@ import type { BuyerLead, Timeline } from "@/lib/buyers";
 import { BuyerDistrictPicker } from "@/components/buyer/buyer-district-picker";
 import { DualEndedRange } from "@/components/buyer/dual-ended-range";
 import { districtIdsToNames } from "@/lib/stockholm-stadsdelar";
+import { toStadsdelClusterId } from "@/lib/stockholm-stadsdelar";
 import { SiteHeader } from "@/components/site-header";
 import { cn } from "@/lib/cn";
 
@@ -268,8 +269,10 @@ export function AgentLeadsDashboard() {
     if (loanPick === "no") list = list.filter((r) => !r.loanApproved);
 
     if (districtPick.length) {
-      const need = new Set(districtPick);
-      list = list.filter((r) => r.districtIds.some((id) => need.has(id)));
+      const need = new Set(districtPick.map(toStadsdelClusterId));
+      list = list.filter((r) =>
+        r.districtIds.map(toStadsdelClusterId).some((id) => need.has(id)),
+      );
     }
 
     list = list.filter((r) =>

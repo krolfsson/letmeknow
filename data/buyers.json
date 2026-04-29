@@ -1,5 +1,29 @@
 [
   {
+    "id": "78d20718-4ead-4f3c-b07d-d7c59e30eba5",
+    "createdAt": "2026-04-29T10:55:44.586Z",
+    "name": "Anders Pettersson",
+    "email": "k.rolfssonnnnn@gmail.com",
+    "phone": "0706291392",
+    "dwellingType": "bostadsratt",
+    "districtIds": [
+      "sodermalm"
+    ],
+    "roomMin": 2,
+    "roomMax": 4,
+    "areaSqmMin": 35,
+    "areaSqmMax": 95,
+    "budgetMinSEK": 2750000,
+    "budgetMaxSEK": 5500000,
+    "timeline": "nu",
+    "amenityIds": [
+      "balcony",
+      "fireplace",
+      "elevator"
+    ],
+    "loanApproved": true
+  },
+  {
     "id": "2116bba3-b59b-4f93-a3fa-6776fc6ae86b",
     "createdAt": "2026-04-28T22:13:05.020Z",
     "name": "Anders Svensson",
@@ -16,6 +40,7 @@
     "budgetMinSEK": 2750000,
     "budgetMaxSEK": 23875000,
     "timeline": "nu",
+    "amenityIds": [],
     "loanApproved": true
   },
   {
@@ -42,6 +67,7 @@
     "budgetMinSEK": 5500000,
     "budgetMaxSEK": 9500000,
     "timeline": "3man",
+    "amenityIds": [],
     "loanApproved": true
   },
   {
@@ -62,6 +88,7 @@
     "budgetMinSEK": 8000000,
     "budgetMaxSEK": 9000000,
     "timeline": "nu",
+    "amenityIds": [],
     "loanApproved": true
   }
 ]
