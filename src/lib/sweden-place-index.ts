@@ -37,7 +37,7 @@ let cache: Promise<{
 export async function loadSwedenPlaceIndex() {
   if (!cache)
     cache = (async () => {
-      const res = await fetch("/sweden-places-search.json?v=2", {
+      const res = await fetch("/sweden-places-search.json?v=3", {
         cache: "force-cache",
       });
       const rows = (await res.json()) as SwedenPlaceRow[];

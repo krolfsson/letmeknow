@@ -42,6 +42,48 @@ function normKey(s) {
     .trim();
 }
 
+/**
+ * Aktuellt länsnamn från officiell kommunkod — första två siffrorna = länskod.
+ * GeoNames admin1 för P-punkter blandar ihop för-1998 länsnamn (“Kristianstads län”)
+ * med kommuner som idag är i Skåne län osv.; därför visar vi län utifrån kommunkod.
+ */
+const PREFIX_TILL_LAN_NAMN = {
+  "01": "Stockholms län",
+  "03": "Uppsala län",
+  "04": "Södermanlands län",
+  "05": "Östergötlands län",
+  "06": "Jönköpings län",
+  "07": "Kronobergs län",
+  "08": "Kalmar län",
+  "09": "Gotlands län",
+  "10": "Blekinge län",
+  "12": "Skåne län",
+  "13": "Hallands län",
+  "14": "Västra Götalands län",
+  "17": "Värmlands län",
+  "18": "Örebro län",
+  "19": "Västmanlands län",
+  "20": "Dalarnas län",
+  "21": "Gävleborgs län",
+  "22": "Västernorrlands län",
+  "23": "Jämtlands län",
+  "24": "Västerbottens län",
+  "25": "Norrbottens län",
+};
+
+function lanNamnFranKommunkod(kk) {
+  const k = String(kk || "").padStart(4, "0");
+  const prefix = k.slice(0, 2);
+  return PREFIX_TILL_LAN_NAMN[prefix] ?? "";
+}
+
+/** GeoNames: riks-/läns-/kommunstäder (PPLC, PPLA, PPLA2–4) — inte generiska PPL-byn. */
+function arKommunhuvudort(fc) {
+  if (!fc) return false;
+  if (fc === "PPLC" || fc === "PPLA") return true;
+  return /^PPLA[234]$/.test(fc);
+}
+
 /** “Stockholms län” (GeoNames blandar Ibland “Lan”). */
 function lanFranAdm1(f) {
   const blobs = [...(f[3] || "").split(","), f[1]].map((x) => String(x || "").trim());
@@ -153,7 +195,8 @@ async function main() {
     kommunKomplettNamnNyckel.add(
       `${normKey(lbl.replace(/\s+kommun$/i, "").trim())}|${kk}`,
     );
-    const lansNamn = lanByLanKod.get(meta?.lanKod || "") || "";
+    const lansNamn =
+      lanNamnFranKommunkod(kk) || lanByLanKod.get(meta?.lanKod || "") || "";
     out.push({
       id: `kommun-${kk}`,
       label: lbl,
@@ -184,14 +227,23 @@ async function main() {
   }
 
   for (const row of bestGeo.values()) {
-    /** Samma placering finns redan för kommunky rad (namn+mappad på kk) ? */
-    if (kommunKomplettNamnNyckel.has(`${normKey(row.name)}|${row.kk}`)) continue;
+    /** Samma namn som kommuncentrum — utom kommunhuvudort (finns oftast som PPLA2, t.ex. Helsingborg). */
+    const isStad = arKommunhuvudort(row.fc);
+    if (
+      kommunKomplettNamnNyckel.has(`${normKey(row.name)}|${row.kk}`) &&
+      !isStad
+    )
+      continue;
+
+    const lanLine = lanNamnFranKommunkod(row.kk);
+    const secondary =
+      isStad && lanLine ? lanLine : kommunTillOmradeSubtitle(row.kk);
 
     out.push({
       id: `geo-${row.gid}`,
       label: row.name.trim(),
-      secondary: kommunTillOmradeSubtitle(row.kk),
-      kind: row.fc === "PPLC" ? "stad" : "ort",
+      secondary,
+      kind: isStad ? "stad" : "ort",
       kk: row.kk || undefined,
     });
   }
