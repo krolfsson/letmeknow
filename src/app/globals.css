@@ -1,16 +1,27 @@
 @import "tailwindcss";
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 :root {
   --bg: #f4f7f4;
   --fg: #0f1411;
   --subtle: #4b5c52;
   --rule: rgb(15 20 17 / 0.1);
-  --green: #0d7a5c;
-  --green-hover: #0a6349;
-  --green-fg: #f6fdf9;
-  --green-soft: #c5e8d8;
-  --green-mist: #e4f2eb;
-  --green-deep: #06402f;
+  --green: #10b981;
+  --green-hover: #059669;
+  --green-fg: #ffffff;
+  --green-soft: #bbf7d0;
+  --green-mist: #ecfdf5;
+  --green-deep: #047857;
 }
 
 @theme inline {
@@ -33,12 +44,12 @@
     --fg: #eef4ef;
     --subtle: #9bb0a5;
     --rule: rgb(238 244 239 / 0.12);
-    --green: #3dd898;
-    --green-hover: #55e5a9;
+    --green: #34d399;
+    --green-hover: #6ee7b7;
     --green-fg: #041910;
-    --green-soft: #1a4635;
-    --green-mist: #122c22;
-    --green-deep: #8fffc8;
+    --green-soft: #064e3b;
+    --green-mist: #022c22;
+    --green-deep: #86efac;
   }
 }
 
@@ -53,19 +64,24 @@ body {
 }
 
 .font-display {
-  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Två-thumb range: transparent spår, bågra träffbubblor aktiverbara */
+/* Två-thumb range på samma [min,max]-span — inga lösa spårgrönskift från webbläsaren */
 .dual-ended-shell {
   position: relative;
+  /* Samma mått som spår + tumnagel så pricken sitter på linjen (WebKit/Moz ritar annars snett) */
+  --de-track-h: 10px;
+  --de-thumb-h: 18px;
+  /* Centrera tumnagel mot 10px-spår: (track − thumb) / 2 */
+  --de-thumb-shift: calc((var(--de-track-h) - var(--de-thumb-h)) / 2);
 }
 
 .dual-ended-input {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 34px;
+  height: 36px;
   margin: 0;
   pointer-events: none;
   background: transparent;
@@ -78,35 +94,46 @@ body {
 .dual-ended-input::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
+  box-sizing: border-box;
   pointer-events: auto;
   width: 18px;
   height: 18px;
+  margin-top: var(--de-thumb-shift);
   border-radius: 9999px;
-  background: var(--green);
+  background: #10b981;
   border: 2px solid color-mix(in srgb, var(--bg), white 85%);
   box-shadow:
     0 1px 2px rgb(0 0 0 / 0.12),
-    0 0 0 2px rgb(13 122 92 / 0.12);
+    0 0 0 2px rgb(16 185 129 / 0.18);
 }
 
 .dual-ended-input::-moz-range-thumb {
+  box-sizing: border-box;
   pointer-events: auto;
   width: 18px;
   height: 18px;
   border-radius: 9999px;
-  background: var(--green);
-  border: 2px solid color-mix(in srgb, var(--bg), white 85%);
+  border: none;
+  background: #10b981;
   box-shadow:
     0 1px 2px rgb(0 0 0 / 0.12),
-    0 0 0 2px rgb(13 122 92 / 0.12);
+    0 0 0 2px rgb(16 185 129 / 0.18);
 }
 
 .dual-ended-input::-webkit-slider-runnable-track {
+  -webkit-appearance: none;
   background: transparent;
-  height: 8px;
+  height: var(--de-track-h);
+  border-radius: 999px;
 }
 
 .dual-ended-input::-moz-range-track {
+  height: var(--de-track-h);
+  border-radius: 999px;
   background: transparent;
-  height: 8px;
+}
+
+/* Viktigt: Firefox ritar annars ett grönt fält från vänstra kanten på nästa slider */
+.dual-ended-input::-moz-range-progress {
+  background: transparent !important;
 }

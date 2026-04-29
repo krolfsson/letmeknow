@@ -1,17 +1,21 @@
 import Link from "next/link";
-import { Container } from "@/components/container";
+import { SoftDivider } from "@/components/soft-divider";
 
 export function SiteHeader() {
   return (
-    <header className="shrink-0 border-b border-rule bg-bg/90">
-      <Container className="flex h-12 items-center justify-center sm:h-14">
+    <header className="shrink-0 px-4 pt-[1.875rem]">
+      <div className="mb-6 flex justify-center">
         <Link
           href="/"
-          className="font-display text-[17px] font-semibold tracking-tight text-fg"
+          className="group inline-flex items-baseline gap-0.5 text-4xl font-semibold tracking-[-0.04em] text-gray-950 opacity-95 transition-opacity hover:opacity-100 sm:text-[2.55rem]"
         >
-          knowwhatiwant
+          <span>want</span>
+          <span className="text-emerald-600 transition-colors group-hover:text-indigo-600">
+            i
+          </span>
         </Link>
-      </Container>
+      </div>
+      <SoftDivider />
     </header>
   );
 }

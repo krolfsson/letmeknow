@@ -1,5 +1,12 @@
 import { NextResponse } from "next/server";
-import { addBuyerLead, loadBuyers, type BuyerLead } from "@/lib/buyers";
+import {
+  addBuyerLead,
+  isAmenityId,
+  loadBuyers,
+  type AmenityId,
+  type BuyerLead,
+} from "@/lib/buyers";
+import { isValidDistrictId } from "@/lib/stockholm-stadsdelar";
 
 function parseBudget(v: unknown): number {
   const n = typeof v === "number" ? v : typeof v === "string" ? parseInt(v, 10) : NaN;
@@ -18,21 +25,6 @@ function parseRoom(v: unknown): number | undefined {
   const n = typeof v === "number" ? v : typeof v === "string" ? parseInt(v, 10) : NaN;
   if (!Number.isFinite(n)) return undefined;
   return n;
-}
-
-function parseGeoJson(input: unknown): GeoJSON.FeatureCollection | null {
-  if (!input || typeof input !== "object") return null;
-  const o = input as Record<string, unknown>;
-  if (o.type === "FeatureCollection" && Array.isArray(o.features)) {
-    return o as unknown as GeoJSON.FeatureCollection;
-  }
-  if (o.type === "Feature" && o.geometry) {
-    return {
-      type: "FeatureCollection",
-      features: [o as unknown as GeoJSON.Feature],
-    };
-  }
-  return null;
 }
 
 export async function GET() {
@@ -63,6 +55,24 @@ export async function POST(request: Request) {
     const dwellingType =
       typeof body.dwellingType === "string" ? body.dwellingType.trim() : "";
     if (!dwellingType) missing.push("dwellingType");
+
+    const districtRaw = body.districtIds;
+    let districtIds: string[] = [];
+    if (!Array.isArray(districtRaw)) {
+      missing.push("districtIds");
+    } else {
+      const cand = [...new Set(
+        districtRaw
+          .filter((x): x is string => typeof x === "string")
+          .map((s) => s.trim())
+          .filter(Boolean),
+      )];
+      if (!cand.length || cand.some((id) => !isValidDistrictId(id))) {
+        missing.push("districtIds");
+      } else {
+        districtIds = cand;
+      }
+    }
 
     const rmMin = parseRoom(body.roomMin);
     const rmMax = parseRoom(body.roomMax);
@@ -99,11 +109,23 @@ export async function POST(request: Request) {
     const timelines: BuyerLead["timeline"][] = ["nu", "3man", "6man"];
     if (!tl || !timelines.includes(tl)) missing.push("timeline");
 
+    const amenityRaw = body.amenityIds;
+    const amenityIds: AmenityId[] = [];
+    if (Array.isArray(amenityRaw)) {
+      for (const value of amenityRaw) {
+        if (
+          typeof value === "string" &&
+          isAmenityId(value) &&
+          !amenityIds.includes(value)
+        ) {
+          amenityIds.push(value);
+        }
+      }
+    }
+
     if (missing.length) {
       return NextResponse.json({ error: "Invalid form", missing }, { status: 400 });
     }
-
-    const geo = parseGeoJson(body.mapAreaGeoJson ?? null);
 
     const lead: BuyerLead = {
       id: crypto.randomUUID(),
@@ -112,6 +134,7 @@ export async function POST(request: Request) {
       email,
       phone,
       dwellingType,
+      districtIds,
       roomMin: rmMin!,
       roomMax: rmMax!,
       areaSqmMin,
@@ -119,15 +142,8 @@ export async function POST(request: Request) {
       budgetMinSEK,
       budgetMaxSEK,
       timeline: tl!,
+      amenityIds,
       loanApproved: Boolean(body.loanApproved),
-      balcony: Boolean(body.balcony),
-      fireplace: Boolean(body.fireplace),
-      elevator: Boolean(body.elevator),
-      areaNotes:
-        typeof body.areaNotes === "string"
-          ? body.areaNotes.trim().slice(0, 2000)
-          : "",
-      mapAreaGeoJson: geo?.features?.length ? geo : null,
     };
 
     await addBuyerLead(lead);

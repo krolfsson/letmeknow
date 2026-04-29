@@ -1,1 +1,67 @@
-[]
+[
+  {
+    "id": "2116bba3-b59b-4f93-a3fa-6776fc6ae86b",
+    "createdAt": "2026-04-28T22:13:05.020Z",
+    "name": "Anders Svensson",
+    "email": "anders.svensson@elfsborg.se",
+    "phone": "07061234123",
+    "dwellingType": "bostadsratt",
+    "districtIds": [
+      "sodermalm"
+    ],
+    "roomMin": 2,
+    "roomMax": 4,
+    "areaSqmMin": 35,
+    "areaSqmMax": 160,
+    "budgetMinSEK": 2750000,
+    "budgetMaxSEK": 23875000,
+    "timeline": "nu",
+    "loanApproved": true
+  },
+  {
+    "id": "eeee1111-bbbb-cccc-dddd-example000099",
+    "createdAt": "2026-04-29T12:00:00.000Z",
+    "name": "Exempel Exempelsson",
+    "email": "exempel.exempelsson@example.com",
+    "phone": "0707643091",
+    "dwellingType": "bostadsratt",
+    "districtIds": [
+      "hornstull",
+      "ostermalm",
+      "sofia",
+      "hogalid",
+      "mariatorget",
+      "mariaberget",
+      "hagastaden",
+      "sofia-kyrka"
+    ],
+    "roomMin": 2,
+    "roomMax": 5,
+    "areaSqmMin": 45,
+    "areaSqmMax": 110,
+    "budgetMinSEK": 5500000,
+    "budgetMaxSEK": 9500000,
+    "timeline": "3man",
+    "loanApproved": true
+  },
+  {
+    "id": "202e396d-93f1-42f4-8a9d-a0b7fab24fe8",
+    "createdAt": "2026-04-28T21:33:05.646Z",
+    "name": "Kristoffer Rolfsson",
+    "email": "k.rolfsson@gmail.com",
+    "phone": "0706291392",
+    "dwellingType": "bostadsratt",
+    "districtIds": [
+      "ostermalm",
+      "gardet"
+    ],
+    "roomMin": 3,
+    "roomMax": 4,
+    "areaSqmMin": 65,
+    "areaSqmMax": 90,
+    "budgetMinSEK": 8000000,
+    "budgetMaxSEK": 9000000,
+    "timeline": "nu",
+    "loanApproved": true
+  }
+]

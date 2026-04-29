@@ -23,12 +23,13 @@ export function Button(props: ButtonProps) {
   const { variant = "primary", asChild, className, children, ...rest } = props;
 
   const base =
-    "inline-flex h-12 min-w-[9.5rem] flex-1 items-center justify-center gap-1.5 rounded-lg px-5 text-[15px] font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:pointer-events-none disabled:opacity-40 sm:min-w-[11rem] sm:flex-initial";
+    "inline-flex h-12 min-w-[9.5rem] flex-1 items-center justify-center gap-1.5 rounded-xl px-5 text-[15px] font-semibold transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:pointer-events-none disabled:opacity-40 sm:min-w-[11rem] sm:flex-initial";
 
   const variants: Record<NonNullable<CommonProps["variant"]>, string> = {
-    primary: "bg-green text-green-fg shadow-sm hover:bg-green-hover",
+    primary:
+      "bg-emerald-500 text-white shadow-[0_8px_25px_rgba(16,185,129,0.30)] hover:scale-[1.01] hover:bg-emerald-600 hover:shadow-[0_12px_35px_rgba(16,185,129,0.42)]",
     secondary:
-      "border-2 border-green bg-green-mist/80 text-green-deep hover:bg-green-soft/50 dark:bg-green-mist/30 dark:text-green dark:hover:bg-green-soft/20",
+      "border border-gray-200 bg-white/70 text-gray-700 hover:border-emerald-500/25 hover:bg-white hover:text-gray-900",
   };
 
   const classes = cn(base, variants[variant], className);

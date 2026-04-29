@@ -1,28 +1,14 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { FormEvent, ReactNode } from "react";
 import { useCallback, useMemo, useState } from "react";
+import { BuyerDistrictPicker } from "@/components/buyer/buyer-district-picker";
 import { DualEndedRange } from "@/components/buyer/dual-ended-range";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import type { Timeline } from "@/lib/buyers";
-import { cn } from "@/lib/cn";
-
-const BuyerAreaMap = dynamic(
-  () => import("./buyer-area-map").then((m) => m.BuyerAreaMap),
-  { loading: () => <MapSkeleton />, ssr: false },
-);
-
-function MapSkeleton() {
-  return (
-    <div className="flex min-h-[200px] flex-1 items-center justify-center rounded-md border border-dashed border-rule text-[13px] text-subtle">
-      Laddar karta…
-    </div>
-  );
-}
+import type { AmenityId, Timeline } from "@/lib/buyers";
 
 const dwellingOptions = [
   { value: "bostadsratt", label: "Bostadsrätt" },
@@ -30,6 +16,12 @@ const dwellingOptions = [
   { value: "villa_parhus", label: "Villa / parhus" },
   { value: "fritid", label: "Fritidshus" },
   { value: "ovrig", label: "Övrigt" },
+];
+
+const amenityOptions: { value: AmenityId; label: string }[] = [
+  { value: "balcony", label: "Balkong / uteplats / altan" },
+  { value: "fireplace", label: "Eldstad" },
+  { value: "elevator", label: "Hiss" },
 ];
 
 const KVM_MIN_AREA = 25;
@@ -57,13 +49,13 @@ function roomLbl(n: number) {
 }
 
 const labelCn =
-  "mb-0.5 flex justify-between gap-2 text-[11px] font-semibold uppercase tracking-wide text-subtle [&_span:last-child]:shrink-0 [&_span:last-child]:tabular-nums [&_span:last-child]:text-[13px] [&_span:last-child]:font-medium [&_span:last-child]:normal-case [&_span:last-child]:text-fg";
+  "mb-1 flex justify-between gap-2 text-[11px] font-semibold uppercase tracking-wide text-gray-500 [&_span:last-child]:shrink-0 [&_span:last-child]:tabular-nums [&_span:last-child]:text-[13px] [&_span:last-child]:font-medium [&_span:last-child]:normal-case [&_span:last-child]:text-gray-900";
 
 const selectCn =
-  "mt-1 w-full rounded-md border border-rule bg-bg px-2 py-1.5 text-[14px] text-fg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-1 focus-visible:ring-offset-bg";
+  "mt-1 w-full rounded-xl border border-gray-200 bg-white/80 px-3 py-2 text-[14px] text-gray-900 outline-none transition-all duration-200 focus-visible:border-emerald-500/45 focus-visible:ring-4 focus-visible:ring-emerald-400/15";
 
 const inpCn =
-  "mt-1 w-full rounded-md border border-rule bg-bg px-2 py-1.5 text-[14px] text-fg outline-none transition-colors focus-visible:ring-2 focus-visible:ring-green focus-visible:ring-offset-1 focus-visible:ring-offset-bg";
+  "mt-1 w-full rounded-xl border border-gray-200 bg-white/80 px-3 py-2 text-[14px] text-gray-900 outline-none transition-all duration-200 focus-visible:border-emerald-500/45 focus-visible:ring-4 focus-visible:ring-emerald-400/15";
 
 function CheckboxRow({
   checked,
@@ -75,10 +67,10 @@ function CheckboxRow({
   label: string;
 }) {
   return (
-    <label className="flex cursor-pointer items-start gap-2 text-[13px] leading-snug">
+    <label className="flex cursor-pointer items-start gap-2 text-[13px] leading-snug text-gray-700">
       <input
         type="checkbox"
-        className="mt-0.5 accent-green"
+        className="mt-0.5 accent-emerald-500"
         checked={checked}
         onChange={(e) => onChecked(e.target.checked)}
       />
@@ -95,8 +87,8 @@ function FieldGroup({
   children: ReactNode;
 }) {
   return (
-    <fieldset className="rounded-md border border-rule p-3 sm:p-3.5">
-      <legend className="px-1.5 font-display text-[13px] font-semibold text-fg">
+    <fieldset className="rounded-2xl border border-gray-100 bg-white/55 p-4 shadow-[0_1px_0_rgba(255,255,255,0.8)_inset] sm:p-5">
+      <legend className="px-1.5 text-[13px] font-semibold text-gray-900">
         {legend}
       </legend>
       <div className="mt-2 space-y-3">{children}</div>
@@ -106,13 +98,6 @@ function FieldGroup({
 
 export default function BuyerForm() {
   const router = useRouter();
-  const [mapGeoJson, setMapGeoJson] = useState<GeoJSON.FeatureCollection | null>(
-    null,
-  );
-
-  const onMapChange = useCallback((fc: GeoJSON.FeatureCollection | null) => {
-    setMapGeoJson(fc);
-  }, []);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -129,12 +114,10 @@ export default function BuyerForm() {
   const [budgetMaxSEK, setBudgetMaxSEK] = useState(5_500_000);
 
   const [timeline, setTimeline] = useState<Timeline>("nu");
+  const [amenityIds, setAmenityIds] = useState<AmenityId[]>([]);
   const [loanApproved, setLoanApproved] = useState(false);
 
-  const [balcony, setBalcony] = useState(false);
-  const [fireplace, setFireplace] = useState(false);
-  const [elevator, setElevator] = useState(false);
-  const [areaNotes, setAreaNotes] = useState("");
+  const [districtIds, setDistrictIds] = useState<string[]>([]);
 
   const [submitErr, setSubmitErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -201,9 +184,21 @@ export default function BuyerForm() {
     setBudgetMinSEK((mn) => (mn > snapped ? snapped : mn));
   }, []);
 
+  const toggleAmenity = useCallback((id: AmenityId, checked: boolean) => {
+    setAmenityIds((prev) =>
+      checked ? [...new Set([...prev, id])] : prev.filter((x) => x !== id),
+    );
+  }, []);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitErr(null);
+
+    if (districtIds.length === 0) {
+      setSubmitErr("Välj minst ett område i Stockholm (stadsdel eller lokalt namn).");
+      return;
+    }
+
     setBusy(true);
 
     const payload = {
@@ -211,6 +206,7 @@ export default function BuyerForm() {
       email,
       phone,
       dwellingType,
+      districtIds,
       roomMin,
       roomMax,
       areaSqmMin: kvmMin,
@@ -218,12 +214,8 @@ export default function BuyerForm() {
       budgetMinSEK,
       budgetMaxSEK,
       timeline,
+      amenityIds,
       loanApproved,
-      balcony,
-      fireplace,
-      elevator,
-      areaNotes,
-      mapAreaGeoJson: mapGeoJson,
     };
 
     try {
@@ -254,28 +246,37 @@ export default function BuyerForm() {
   };
 
   return (
-    <div className="min-h-dvh bg-bg pb-12">
+    <div className="min-h-dvh bg-gradient-to-b from-white to-green-50/40 pb-16">
       <SiteHeader />
 
-      <div className="mx-auto max-w-4xl px-4 pb-6 pt-5">
-        <p className="font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-green">
-          Köparsignal
-        </p>
-        <h1 className="font-display mt-1 text-2xl font-bold tracking-tight text-fg sm:text-4xl">
-          Dra min · max på samma linje — kartan till höger
-        </h1>
-        <p className="mt-1.5 max-w-xl text-[13px] leading-snug text-subtle">
-          Reglagen har två thumbs: vänster sida = minsta, höger sida = högsta. Bolån
-          och kryss för bostaden ligger nedan.
-        </p>
+      <div className="relative mx-auto max-w-4xl px-4 pb-6 pt-10">
+        <div className="pointer-events-none absolute inset-x-0 top-14 flex justify-center">
+          <div className="h-[260px] w-[560px] rounded-full bg-emerald-400/15 opacity-40 blur-3xl" />
+        </div>
+
+        <div className="relative mb-8 text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">
+            Köpare
+          </p>
+          <h1 className="mx-auto mt-2 max-w-2xl text-3xl font-semibold tracking-tight text-gray-900 md:text-5xl">
+            Berätta hur du vill bo
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-gray-600">
+            Skriv in områden, ramar och kontaktuppgifter. När en mäklare har något
+            som matchar kan de hitta dig.
+          </p>
+        </div>
 
         <form
           onSubmit={handleSubmit}
-          className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_min(44%,460px)] lg:gap-6"
+          className="relative mx-auto max-w-2xl space-y-4 rounded-2xl border border-white/40 bg-white/80 px-4 py-5 shadow-[0_10px_40px_rgba(0,0,0,0.06)] ring-1 ring-white/50 backdrop-blur-md sm:px-6 sm:py-6"
           noValidate
         >
-          <div className="space-y-3.5">
-            <FieldGroup legend="Kontakt">
+          <FieldGroup legend="Område i Stockholm">
+            <BuyerDistrictPicker value={districtIds} onChange={setDistrictIds} />
+          </FieldGroup>
+
+          <FieldGroup legend="Kontakt">
               <div>
                 <label className={labelCn}>
                   <span>Namn</span>
@@ -322,9 +323,9 @@ export default function BuyerForm() {
                   />
                 </div>
               </div>
-            </FieldGroup>
+          </FieldGroup>
 
-            <FieldGroup legend="Boende och siffror">
+          <FieldGroup legend="Boende och siffror">
               <div>
                 <label className={labelCn}>
                   <span>Typ</span>
@@ -391,7 +392,7 @@ export default function BuyerForm() {
               <div>
                 <label
                   htmlFor="timeline"
-                  className="mb-0.5 block text-[11px] font-semibold uppercase tracking-wide text-subtle"
+                  className="mb-1 block text-[11px] font-semibold uppercase tracking-wide text-gray-500"
                 >
                   Flytta in
                 </label>
@@ -412,79 +413,40 @@ export default function BuyerForm() {
                   )}
                 </select>
               </div>
-            </FieldGroup>
+          </FieldGroup>
 
-            <FieldGroup legend="Bolån">
+          <FieldGroup legend="Checklista">
+            {amenityOptions.map((option) => (
+              <CheckboxRow
+                key={option.value}
+                checked={amenityIds.includes(option.value)}
+                onChecked={(checked) => toggleAmenity(option.value, checked)}
+                label={option.label}
+              />
+            ))}
+          </FieldGroup>
+
+          <FieldGroup legend="Bolån">
               <CheckboxRow
                 checked={loanApproved}
                 onChecked={setLoanApproved}
-                label="Jag har bolånelöfte (eller väntas från bank inom kort)"
+                label="Jag har bolånelöfte (vi kommer inte dubbelkolla, men vill mest veta hur långt fram i processen du är)"
               />
-              <p className="text-[11px] leading-snug text-subtle">
-                Här räcker vi bara vad du själv upplever – ingen bank verifierar i
-                det här skedet på knowwhatiwant.
-              </p>
-            </FieldGroup>
+          </FieldGroup>
 
-            <FieldGroup legend="Önskad bostad — checklista">
-              <div className="grid gap-2 sm:grid-cols-1">
-                <CheckboxRow checked={balcony} onChecked={setBalcony} label="Vill kunna ha balkong eller uteplats" />
-                <CheckboxRow checked={fireplace} onChecked={setFireplace} label="Eldstad önskad (spis/kamin/öppen spis)" />
-                <CheckboxRow checked={elevator} onChecked={setElevator} label="Hiss till lägenhetsplan" />
-              </div>
-              <div>
-                <label className={labelCn}>
-                  <span>Övrigt i ord — gata, hus, område</span>
-                  <span />
-                </label>
-                <textarea
-                  className={cn(inpCn, "min-h-[64px] resize-y py-2")}
-                  name="areaNotes"
-                  placeholder='T.ex. "vill höra om just Storgatan" eller bredare…'
-                  rows={3}
-                  value={areaNotes}
-                  onChange={(e) => setAreaNotes(e.target.value)}
-                />
-              </div>
-            </FieldGroup>
+          {submitErr ? (
+            <p className="rounded-xl border border-emerald-500/20 bg-green-50/90 px-3 py-2 text-[13px] text-gray-900">
+              {submitErr}
+            </p>
+          ) : null}
 
-            {submitErr ? (
-              <p className="rounded-md border border-rule bg-green-mist/50 px-2.5 py-1.5 text-[13px] text-fg dark:bg-green-soft/20">
-                {submitErr}
-              </p>
-            ) : null}
-
-            <div className="flex flex-wrap items-center gap-3 pb-4 lg:hidden">
-              <Button type="submit" disabled={busy}>
-                {busy ? "Skickar…" : "Skicka köpsignal"}
-              </Button>
-              <Button variant="secondary" asChild>
-                <Link href="/">Avbryt</Link>
-              </Button>
-            </div>
-          </div>
-
-          <div className="flex min-h-[min(520px,70vh)] flex-col gap-2 lg:sticky lg:top-5 lg:self-start">
-            <BuyerAreaMap onChange={onMapChange} />
-            {mapGeoJson?.features?.length ? (
-              <p className="text-[11px] text-green">
-                {mapGeoJson.features.length === 1
-                  ? "Område markerat ✓"
-                  : `${mapGeoJson.features.length} markerade ytor`}
-              </p>
-            ) : (
-              <p className="text-[11px] text-subtle">
-                Kartan är valfri — rita eller hoppa över.
-              </p>
-            )}
-            <div className="mt-auto hidden flex-wrap items-center gap-3 lg:flex lg:pb-6">
-              <Button type="submit" disabled={busy}>
-                {busy ? "Skickar…" : "Skicka köpsignal"}
-              </Button>
-              <Button variant="secondary" asChild>
-                <Link href="/">Avbryt</Link>
-              </Button>
-            </div>
+          <div className="flex flex-wrap items-center gap-3 pb-4">
+            <Button type="submit" disabled={busy}>
+              {busy ? "Skickar…" : "Skicka köpsignal"}
+            </Button>
+            <Button variant="secondary" asChild>
+              <Link href="/">Avbryt</Link>
+            </Button>
           </div>
         </form>
       </div>
