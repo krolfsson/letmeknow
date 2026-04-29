@@ -103,9 +103,8 @@ function isOmradenGrupp(kind: string): boolean {
 export function BuyerLocationPicker(props: {
   value: string[];
   onChange: (ids: string[]) => void;
-  purpose?: "buyerSubmission" | "agentFilter";
 }) {
-  const { value, onChange, purpose = "buyerSubmission" } = props;
+  const { value, onChange } = props;
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [nationalRows, setNationalRows] = useState<SwedenPlaceRow[] | null>(
@@ -137,7 +136,7 @@ export function BuyerLocationPicker(props: {
   const filtered = useMemo(() => {
     const q = normalizeForSearch(debouncedQuery);
     if (!q) {
-      return corpusDedup.slice(0, 160);
+      return [];
     }
 
     type Scored = SwedenPlaceRow & { _score: number };
@@ -203,6 +202,8 @@ export function BuyerLocationPicker(props: {
   );
 
   const busy = nationalRows === null && !loadErr;
+  const queryNorm = normalizeForSearch(debouncedQuery);
+  const harSokOrd = queryNorm.length > 0;
 
   return (
     <div className="space-y-3">
@@ -235,99 +236,103 @@ export function BuyerLocationPicker(props: {
             aria-busy={busy}
             disabled={busy}
           />
-          <hr className="border-gray-100" />
-          <div className="max-h-[min(46vh,320px)] overflow-y-auto pb-2">
-            {busy ? (
-              <p className="px-3 py-4 text-center text-[13px] text-gray-500">
-                Laddar platser…
-              </p>
-            ) : filtered.length === 0 && normalizeForSearch(debouncedQuery).length >
-              0 ? (
-              <p className="px-3 py-4 text-center text-[13px] text-gray-500">
-                Inga träffar — prova ett annat sökord.
-              </p>
-            ) : filtered.length === 0 ? (
-              <p className="px-3 py-4 text-[13px] text-gray-500">
-                Skriv för att söka — kommuner visas först och områden under rubriken
-                nedan.
-              </p>
-            ) : (
-              <div className="space-y-1 pt-1">
-                {kommuner.length > 0 ? (
-                  <>
-                    <p className="px-3 pt-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
-                      Kommun
-                    </p>
-                    <ul className="divide-y divide-gray-50">
-                      {kommuner.map((d) => (
-                        <li key={d.id}>
-                          <button
-                            type="button"
-                            className={cn(
-                              "flex w-full items-start gap-2.5 px-3 py-2 text-left hover:bg-green-50/80",
-                              selectedSet.has(d.id) && "bg-green-50/90",
-                            )}
-                            onClick={() => toggle(d.id)}
-                          >
-                            <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-[11px] text-emerald-600">
-                              {selectedSet.has(d.id) ? "✓" : ""}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <HighlightMatch text={d.label} normQ={debouncedQuery} />
-                              {d.secondary ? (
-                                <span className="text-[13px] font-normal text-gray-500">
-                                  {`, ${d.secondary}`}
+          {(busy || harSokOrd) && !loadErr ? (
+            <>
+              <hr className="border-gray-100" />
+              <div className="max-h-[min(46vh,320px)] overflow-y-auto pb-2">
+                {busy ? (
+                  <p className="px-3 py-4 text-center text-[13px] text-gray-500">
+                    Laddar platser…
+                  </p>
+                ) : filtered.length === 0 ? (
+                  <p className="px-3 py-4 text-center text-[13px] text-gray-500">
+                    Inga träffar — prova ett annat sökord.
+                  </p>
+                ) : (
+                  <div className="space-y-1 pt-1">
+                    {kommuner.length > 0 ? (
+                      <>
+                        <p className="px-3 pt-2 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                          Kommun
+                        </p>
+                        <ul className="divide-y divide-gray-50">
+                          {kommuner.map((d) => (
+                            <li key={d.id}>
+                              <button
+                                type="button"
+                                className={cn(
+                                  "flex w-full items-start gap-2.5 px-3 py-2 text-left hover:bg-green-50/80",
+                                  selectedSet.has(d.id) && "bg-green-50/90",
+                                )}
+                                onClick={() => toggle(d.id)}
+                              >
+                                <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-[11px] text-emerald-600">
+                                  {selectedSet.has(d.id) ? "✓" : ""}
                                 </span>
-                              ) : null}
-                            </span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                ) : null}
+                                <span className="min-w-0 flex-1">
+                                  <HighlightMatch
+                                    text={d.label}
+                                    normQ={debouncedQuery}
+                                  />
+                                  {d.secondary ? (
+                                    <span className="text-[13px] font-normal text-gray-500">
+                                      {`, ${d.secondary}`}
+                                    </span>
+                                  ) : null}
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    ) : null}
 
-                {omraden.length > 0 ? (
-                  <>
-                    <p
-                      className={cn(
-                        "px-3 pt-3 text-[11px] font-semibold uppercase tracking-wide text-gray-400",
-                        kommuner.length === 0 && "pt-1",
-                      )}
-                    >
-                      Område
-                    </p>
-                    <ul className="divide-y divide-gray-50">
-                      {omraden.map((d) => (
-                        <li key={d.id}>
-                          <button
-                            type="button"
-                            className={cn(
-                              "flex w-full items-start gap-2.5 px-3 py-2 text-left hover:bg-green-50/80",
-                              selectedSet.has(d.id) && "bg-green-50/90",
-                            )}
-                            onClick={() => toggle(d.id)}
-                          >
-                            <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-[11px] text-emerald-600">
-                              {selectedSet.has(d.id) ? "✓" : ""}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <HighlightMatch text={d.label} normQ={debouncedQuery} />
-                              {d.secondary ? (
-                                <span className="text-[13px] font-normal text-gray-500">
-                                  {`, ${d.secondary}`}
+                    {omraden.length > 0 ? (
+                      <>
+                        <p
+                          className={cn(
+                            "px-3 pt-3 text-[11px] font-semibold uppercase tracking-wide text-gray-400",
+                            kommuner.length === 0 && "pt-1",
+                          )}
+                        >
+                          Område
+                        </p>
+                        <ul className="divide-y divide-gray-50">
+                          {omraden.map((d) => (
+                            <li key={d.id}>
+                              <button
+                                type="button"
+                                className={cn(
+                                  "flex w-full items-start gap-2.5 px-3 py-2 text-left hover:bg-green-50/80",
+                                  selectedSet.has(d.id) && "bg-green-50/90",
+                                )}
+                                onClick={() => toggle(d.id)}
+                              >
+                                <span className="mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded border border-gray-200 bg-white text-[11px] text-emerald-600">
+                                  {selectedSet.has(d.id) ? "✓" : ""}
                                 </span>
-                              ) : null}
-                            </span>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </>
-                ) : null}
+                                <span className="min-w-0 flex-1">
+                                  <HighlightMatch
+                                    text={d.label}
+                                    normQ={debouncedQuery}
+                                  />
+                                  {d.secondary ? (
+                                    <span className="text-[13px] font-normal text-gray-500">
+                                      {`, ${d.secondary}`}
+                                    </span>
+                                  ) : null}
+                                </span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    ) : null}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          ) : null}
         </div>
       </label>
 
@@ -357,15 +362,7 @@ export function BuyerLocationPicker(props: {
             );
           })}
         </div>
-      ) : purpose === "agentFilter" ? (
-        <p className="text-[12px] text-gray-600">
-          Ingen geografisk begränsning — välj kommuner eller orter för att filtrera.
-        </p>
-      ) : (
-        <p className="text-[12px] text-gray-600">
-          Välj minst ett område, en stad eller ett samhälle.
-        </p>
-      )}
+      ) : null}
     </div>
   );
 }

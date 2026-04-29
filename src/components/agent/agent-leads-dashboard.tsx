@@ -411,11 +411,7 @@ export function AgentLeadsDashboard() {
             </FilterFieldGroup>
 
             <FilterFieldGroup legend="Geografi">
-              <BuyerDistrictPicker
-                purpose="agentFilter"
-                value={districtPick}
-                onChange={setDistrictPick}
-              />
+              <BuyerDistrictPicker value={districtPick} onChange={setDistrictPick} />
             </FilterFieldGroup>
 
             <FilterFieldGroup legend="Bostadstyp">
