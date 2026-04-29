@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -111,6 +112,7 @@ export function BuyerLocationPicker(props: {
     null,
   );
   const [loadErr, setLoadErr] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     loadSwedenPlaceIndex()
@@ -186,10 +188,13 @@ export function BuyerLocationPicker(props: {
 
   const toggle = useCallback(
     (id: string) => {
+      setQuery("");
+      setDebouncedQuery("");
       const next = new Set(value);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       onChange(sortSelectedIds([...next]));
+      queueMicrotask(() => inputRef.current?.focus());
     },
     [onChange, value, sortSelectedIds],
   );
@@ -222,6 +227,7 @@ export function BuyerLocationPicker(props: {
             aria-hidden
           />
           <input
+            ref={inputRef}
             className={cn(
               "w-full rounded-xl border-0 bg-transparent py-3 pl-10 pr-3 text-[15px] text-gray-900 outline-none placeholder:text-gray-400",
               busy && "cursor-wait opacity-55",
